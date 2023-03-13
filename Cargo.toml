@@ -1,0 +1,21 @@
+[package]
+name = "wasmql"
+version = "0.1.0"
+edition = "2021"
+
+[workspace]
+members = [
+    "wasmql-macros",
+]
+exclude = [
+    "examples/protocol",
+    "examples/backend-axum",
+]
+
+[features]
+frontend = []
+
+[dependencies]
+postcard = { version = "1", features = ["alloc"], default-features = false }
+serde = { version = "1", features = ["derive"], default-features = false }
+wasmql-macros = { path = "wasmql-macros" }
