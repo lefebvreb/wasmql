@@ -1,20 +1,25 @@
 //! Js values are simply ids of values stored in a js array and owned by the host
 //! js host environment.
+//! 
+//! Special values are:
+//! - 
 
 use core::fmt::Display;
 
 use alloc::string::ToString;
 use serde::{ser, de};
 
+use super::ffi;
+
 #[derive(Copy, Clone, Debug)]
 #[repr(transparent)]
-pub struct JsValue(u32);
+pub struct JsValue(pub(crate) u32);
 
 pub type JsResult<T> = Result<T, JsValue>;
 
 impl JsValue {
-    pub fn from_display<T: Display>(v: T) -> Self {
-        Self::from_string(&v.to_string())
+    fn from_display<T: Display>(v: T) -> Self {
+        ffi::string(&v.to_string())
     }
 }
 

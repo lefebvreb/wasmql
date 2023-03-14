@@ -1,10 +1,12 @@
 //! Serializing from rust type to js value.
 
 use core::fmt::Display;
+use core::mem::size_of;
 
 use serde::{Serializer, Serialize};
 use serde::ser::{SerializeSeq, SerializeTuple, SerializeTupleStruct, SerializeTupleVariant, SerializeMap, SerializeStruct, SerializeStructVariant};
 
+use super::ffi;
 use super::js::{JsValue, JsResult};
 
 #[derive(Debug)]
@@ -30,77 +32,77 @@ impl Serializer for JsSerializer {
     type SerializeStructVariant = JsValue;
 
     fn serialize_bool(self, v: bool) -> JsResult<JsValue> {
-        todo!()
+        Ok(ffi::boolean(v))
     }
 
     fn serialize_i8(self, v: i8) -> JsResult<JsValue> {
-        todo!()
+        Ok(ffi::number(v as f64))
     }
 
     fn serialize_i16(self, v: i16) -> JsResult<JsValue> {
-        todo!()
+        Ok(ffi::number(v as f64))
     }
 
     fn serialize_i32(self, v: i32) -> JsResult<JsValue> {
-        todo!()
+        Ok(ffi::number(v as f64))
     }
 
     fn serialize_i64(self, v: i64) -> JsResult<JsValue> {
-        todo!()
+        Ok(ffi::number(v as f64))
     }
 
     fn serialize_u8(self, v: u8) -> JsResult<JsValue> {
-        todo!()
+        Ok(ffi::number(v as f64))
     }
 
     fn serialize_u16(self, v: u16) -> JsResult<JsValue> {
-        todo!()
+        Ok(ffi::number(v as f64))
     }
 
     fn serialize_u32(self, v: u32) -> JsResult<JsValue> {
-        todo!()
+        Ok(ffi::number(v as f64))
     }
 
     fn serialize_u64(self, v: u64) -> JsResult<JsValue> {
-        todo!()
+        Ok(ffi::number(v as f64))
     }
 
     fn serialize_f32(self, v: f32) -> JsResult<JsValue> {
-        todo!()
+        Ok(ffi::number(v as f64))
     }
 
     fn serialize_f64(self, v: f64) -> JsResult<JsValue> {
-        todo!()
+        Ok(ffi::number(v as f64))
     }
 
     fn serialize_char(self, v: char) -> JsResult<JsValue> {
-        todo!()
+        let mut buffer = [0; size_of::<char>()];
+        let s = v.encode_utf8(&mut buffer);
+        Ok(ffi::string(s))
     }
 
     fn serialize_str(self, v: &str) -> JsResult<JsValue> {
-        todo!()
+        Ok(ffi::string(v))
     }
 
     fn serialize_bytes(self, v: &[u8]) -> JsResult<JsValue> {
-        todo!()
+        Ok(ffi::bytes(v))
     }
 
     fn serialize_none(self) -> JsResult<JsValue> {
-        todo!()
+        Ok(ffi::null())
     }
 
-    fn serialize_some<T: ?Sized>(self, value: &T) -> JsResult<JsValue>
-    where
-        T: serde::Serialize {
-        todo!()
+    fn serialize_some<T: Serialize + ?Sized>(self, value: &T) -> JsResult<JsValue> {
+        value.serialize(self)
     }
 
     fn serialize_unit(self) -> JsResult<JsValue> {
-        todo!()
+        Ok(ffi::undefined())
     }
 
     fn serialize_unit_struct(self, name: &'static str) -> JsResult<JsValue> {
-        todo!()
+        name.serialize(self)
     }
 
     fn serialize_unit_variant(
@@ -130,11 +132,11 @@ impl Serializer for JsSerializer {
         todo!()
     }
 
-    fn serialize_seq(self, len: Option<usize>) -> Result<Self::SerializeSeq, JsValue> {
+    fn serialize_seq(self, len: Option<usize>) -> JsResult<JsValue> {
         todo!()
     }
 
-    fn serialize_tuple(self, len: usize) -> Result<Self::SerializeTuple, JsValue> {
+    fn serialize_tuple(self, len: usize) -> JsResult<JsValue> {
         todo!()
     }
 
@@ -142,7 +144,7 @@ impl Serializer for JsSerializer {
         self,
         name: &'static str,
         len: usize,
-    ) -> Result<Self::SerializeTupleStruct, JsValue> {
+    ) -> JsResult<JsValue> {
         todo!()
     }
 
@@ -152,11 +154,11 @@ impl Serializer for JsSerializer {
         variant_index: u32,
         variant: &'static str,
         len: usize,
-    ) -> Result<Self::SerializeTupleVariant, JsValue> {
+    ) -> JsResult<JsValue> {
         todo!()
     }
 
-    fn serialize_map(self, len: Option<usize>) -> Result<Self::SerializeMap, JsValue> {
+    fn serialize_map(self, len: Option<usize>) -> JsResult<JsValue> {
         todo!()
     }
 
@@ -164,7 +166,7 @@ impl Serializer for JsSerializer {
         self,
         name: &'static str,
         len: usize,
-    ) -> Result<Self::SerializeStruct, JsValue> {
+    ) -> JsResult<JsValue> {
         todo!()
     }
 
@@ -174,7 +176,7 @@ impl Serializer for JsSerializer {
         variant_index: u32,
         variant: &'static str,
         len: usize,
-    ) -> Result<Self::SerializeStructVariant, JsValue> {
+    ) -> JsResult<JsValue> {
         todo!()
     }
 

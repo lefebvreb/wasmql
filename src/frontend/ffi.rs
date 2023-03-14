@@ -1,52 +1,76 @@
 //! All functions related to interfacing with javascript.
 
-use core::alloc::Layout;
 use core::fmt;
-
-use alloc::alloc::alloc;
 
 use super::js::JsValue;
 
-mod env {
+mod exports {
+    use core::alloc::Layout;
+
+    use alloc::alloc::alloc;
+
+    // All exported functions need to be prefixed with a double underscore.
+    // User-defined function will be prevented to begin with this prefix.
+
+    /// Allocates some bytes for js to write to.
+    #[no_mangle]
+    fn __alloc(len: usize) -> *const u8 {
+        let layout = Layout::array::<u8>(len).unwrap();
+        unsafe { alloc(layout) }
+    }
+
+    /// Resets the allocator.
+    /// 
+    /// # Safety
+    /// 
+    /// The caller must ensure that no allocated objects currently exist in the program.
+    #[no_mangle]
+    unsafe fn __reset() {
+        super::super::alloc::reset();
+    }
+}
+
+mod imports {
     use super::*;
 
     extern "C" {
-        pub fn bytes(ptr: *const u8, len: usize) -> JsValue;
+        pub fn number(v: f64) -> JsValue;
     
         pub fn string(ptr: *const u8, len: usize) -> JsValue;
+    
+        pub fn bytes(ptr: *const u8, len: usize) -> JsValue;
     
         pub fn log(v: JsValue);
     }
 }
 
-// All exported functions need to be prefixed with a double underscore.
-// User-defined function will be prevented to begin with this prefix.
-
-#[no_mangle]
-fn __alloc(len: usize) -> *const u8 {
-    let layout = Layout::array::<u8>(len).unwrap();
-    unsafe { alloc(layout) }
+pub const fn boolean(v: bool) -> JsValue {
+    JsValue(v as u32)
 }
 
-#[no_mangle]
-fn __reset(len: usize) -> *const u8 {
-    let layout = Layout::array::<u8>(len).unwrap();
-    unsafe { alloc(layout) }
+pub const fn null() -> JsValue {
+    JsValue(2)
 }
 
-impl JsValue {
-    pub fn from_bytes(v: &[u8]) -> JsValue {
-        unsafe { env::bytes(v.as_ptr(), v.len()) }
-    }
+pub const fn undefined() -> JsValue {
+    JsValue(3)
+}
 
-    pub fn from_string(v: &str) -> Self {
-        unsafe { env::string(v.as_ptr(), v.len()) }
-    }
+pub fn number(v: f64) -> JsValue {
+    unsafe { imports::number(v) }
+}
+
+pub fn string(v: &str) -> JsValue {
+    unsafe { imports::string(v.as_ptr(), v.len()) }
+}
+
+pub fn bytes(v: &[u8]) -> JsValue {
+    unsafe { imports::string(v.as_ptr(), v.len()) }
 }
 
 impl fmt::Display for JsValue {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        unsafe { env::log(*self) };
+    fn fmt(&self, _f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        unsafe { imports::log(*self) };
         Ok(())
     }
 }

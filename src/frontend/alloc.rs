@@ -11,7 +11,9 @@ const MIN_ADDRESS: usize = 1;
 /// The size of a wasm memory page.
 const PAGE_SIZE: usize = 65536;
 
+/// The bump allocator.
 struct BumpAllocator {
+    /// Current position of the allocator, i.e. beginning of the free memory zone.
     cursor: AtomicUsize,
 }
 
@@ -65,6 +67,6 @@ static GLOBAL: BumpAllocator = BumpAllocator { cursor: AtomicUsize::new(MIN_ADDR
 /// # Safety
 /// 
 /// The caller must ensure that no allocated objects currently exist in the program.
-pub unsafe fn clear() {
+pub unsafe fn reset() {
     GLOBAL.cursor.store(MIN_ADDRESS, SeqCst);
 }

@@ -23,5 +23,5 @@ pub fn encode<T: Serialize + DeserializeOwned>(v: JsValue) -> Result<JsValue, Js
     let mut deserializer = JsDeserializer(v);
     let val = T::deserialize(&mut deserializer)?;
     let bytes = postcard::to_allocvec(&val)?;
-    Ok(JsValue::from_bytes(&bytes))
+    Ok(ffi::bytes(&bytes))
 }
