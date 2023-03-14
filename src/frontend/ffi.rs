@@ -1,7 +1,5 @@
 //! All functions related to interfacing with javascript.
 
-use core::fmt;
-
 use super::js::JsValue;
 
 mod exports {
@@ -34,12 +32,21 @@ mod imports {
     use super::*;
 
     extern "C" {
+        /// Creates a new `number`.
         pub fn number(v: f64) -> JsValue;
-    
+        /// Creates a new `string`.
         pub fn string(ptr: *const u8, len: usize) -> JsValue;
-    
+        /// Creates a new `Uint8Array`.
         pub fn bytes(ptr: *const u8, len: usize) -> JsValue;
-    
+        /// Creates a new empty object `{}`.
+        pub fn object() -> JsValue;
+        /// Appends a new key-value pair to an `object`.
+        pub fn object_append(obj: JsValue, k: JsValue, v: JsValue) -> JsValue;
+        /// Creates a new array `[]`.
+        pub fn array() -> JsValue;
+        /// Appends a new value to an `array`.
+        pub fn array_append(arr: JsValue, v: JsValue) -> JsValue;
+        /// Logs a js-owned value using `console.log`.
         pub fn log(v: JsValue);
     }
 }
@@ -65,12 +72,25 @@ pub fn string(v: &str) -> JsValue {
 }
 
 pub fn bytes(v: &[u8]) -> JsValue {
-    unsafe { imports::string(v.as_ptr(), v.len()) }
+    unsafe { imports::bytes(v.as_ptr(), v.len()) }
 }
 
-impl fmt::Display for JsValue {
-    fn fmt(&self, _f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        unsafe { imports::log(*self) };
-        Ok(())
-    }
+pub fn object() -> JsValue {
+    unsafe { imports::object() }
+}
+
+pub fn object_append(obj: JsValue, k: JsValue, v: JsValue) -> JsValue {
+    unsafe { imports::object_append(obj, k, v) }
+}
+
+pub fn array() -> JsValue {
+    unsafe { imports::array() }
+}
+
+pub fn array_append(arr: JsValue, v: JsValue) -> JsValue {
+    unsafe { imports::array_append(arr, v) }
+}
+
+pub fn log(v: JsValue) {
+    unsafe { imports::log(v) }
 }

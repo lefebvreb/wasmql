@@ -2,7 +2,7 @@
 
 extern crate alloc;
 
-pub use wasmql_macros::data;
+//pub use wasmql_macros::data;
 
 #[doc(hidden)]
 #[cfg(feature = "frontend")]

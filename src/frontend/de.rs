@@ -1,12 +1,11 @@
 //! Deserializing from js value to rust type.
 
-use serde::de::Visitor;
+use serde::de::{Visitor, DeserializeOwned};
 use serde::Deserializer;
 
 use super::js::{JsValue, JsResult};
 
-#[derive(Debug)]
-pub struct JsDeserializer(pub JsValue);
+struct JsDeserializer(pub JsValue);
 
 impl<'de> Deserializer<'de> for &'de mut JsDeserializer {
     type Error = JsValue;
@@ -149,4 +148,8 @@ impl<'de> Deserializer<'de> for &'de mut JsDeserializer {
     fn deserialize_ignored_any<V: Visitor<'de>>(self, visitor: V) -> JsResult<V::Value> {
         todo!()
     }
+}
+
+pub fn from_js<T: DeserializeOwned>(val: JsValue) -> JsResult<T> {
+    T::deserialize(&mut JsDeserializer(val))
 }

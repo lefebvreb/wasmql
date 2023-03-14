@@ -9,8 +9,22 @@ use serde::ser::{SerializeSeq, SerializeTuple, SerializeTupleStruct, SerializeTu
 use super::ffi;
 use super::js::{JsValue, JsResult};
 
-#[derive(Debug)]
-pub struct JsSerializer;
+struct JsSerializer;
+
+struct JsTupleVariantSerializer {
+    parent: JsValue,
+    child: JsValue,
+}
+
+struct JsMapSerializer {
+    obj: JsValue,
+    next_key: Option<JsValue>,
+}
+
+struct JsStructVariantSerializer {
+    parent: JsValue,
+    child: JsValue,
+}
 
 impl Serializer for JsSerializer {
     type Ok = JsValue;
@@ -23,13 +37,13 @@ impl Serializer for JsSerializer {
 
     type SerializeTupleStruct = JsValue;
 
-    type SerializeTupleVariant = JsValue;
+    type SerializeTupleVariant = JsTupleVariantSerializer;
 
-    type SerializeMap = JsValue;
+    type SerializeMap = JsMapSerializer;
 
     type SerializeStruct = JsValue;
 
-    type SerializeStructVariant = JsValue;
+    type SerializeStructVariant = JsStructVariantSerializer;
 
     fn serialize_bool(self, v: bool) -> JsResult<JsValue> {
         Ok(ffi::boolean(v))
@@ -94,7 +108,7 @@ impl Serializer for JsSerializer {
     }
 
     fn serialize_some<T: Serialize + ?Sized>(self, value: &T) -> JsResult<JsValue> {
-        value.serialize(self)
+        to_js(value)
     }
 
     fn serialize_unit(self) -> JsResult<JsValue> {
@@ -102,86 +116,99 @@ impl Serializer for JsSerializer {
     }
 
     fn serialize_unit_struct(self, name: &'static str) -> JsResult<JsValue> {
-        name.serialize(self)
+        to_js(name)
     }
 
     fn serialize_unit_variant(
         self,
-        name: &'static str,
-        variant_index: u32,
+        _name: &'static str,
+        _variant_index: u32,
         variant: &'static str,
     ) -> JsResult<JsValue> {
-        todo!()
+        Ok(ffi::string(variant))
     }
 
     fn serialize_newtype_struct<T: Serialize + ?Sized>(
         self,
-        name: &'static str,
+        _name: &'static str,
         value: &T,
     ) -> JsResult<JsValue> {
-        todo!()
+        to_js(value)
     }
 
     fn serialize_newtype_variant<T: Serialize + ?Sized>(
         self,
-        name: &'static str,
-        variant_index: u32,
+        _name: &'static str,
+        _variant_index: u32,
         variant: &'static str,
         value: &T,
     ) -> JsResult<JsValue> {
-        todo!()
+        let obj = ffi::object();
+        let k = ffi::string(variant);
+        let v = to_js(value)?;
+        ffi::object_append(obj, k, v);
+        Ok(obj)
     }
 
-    fn serialize_seq(self, len: Option<usize>) -> JsResult<JsValue> {
-        todo!()
+    fn serialize_seq(self, _len: Option<usize>) -> JsResult<JsValue> {
+        Ok(ffi::array())
     }
 
-    fn serialize_tuple(self, len: usize) -> JsResult<JsValue> {
-        todo!()
+    fn serialize_tuple(self, _len: usize) -> JsResult<JsValue> {
+        Ok(ffi::array())
     }
 
     fn serialize_tuple_struct(
         self,
-        name: &'static str,
-        len: usize,
+        _name: &'static str,
+        _len: usize,
     ) -> JsResult<JsValue> {
-        todo!()
+        Ok(ffi::array())
     }
 
     fn serialize_tuple_variant(
         self,
-        name: &'static str,
-        variant_index: u32,
+        _name: &'static str,
+        _variant_index: u32,
         variant: &'static str,
-        len: usize,
-    ) -> JsResult<JsValue> {
-        todo!()
+        _len: usize,
+    ) -> JsResult<JsTupleVariantSerializer> {
+        let obj = ffi::object();
+        let k = ffi::string(variant);
+        let arr = ffi::array();
+        ffi::object_append(obj, k, arr);
+        Ok(JsTupleVariantSerializer { parent: obj, child: arr })
     }
 
-    fn serialize_map(self, len: Option<usize>) -> JsResult<JsValue> {
-        todo!()
+    fn serialize_map(self, len: Option<usize>) -> JsResult<JsMapSerializer> {
+        let object = ffi::object();
+        Ok(JsMapSerializer { obj: object, next_key: None })
     }
 
     fn serialize_struct(
         self,
-        name: &'static str,
-        len: usize,
+        _name: &'static str,
+        _len: usize,
     ) -> JsResult<JsValue> {
-        todo!()
+        Ok(ffi::object())
     }
 
     fn serialize_struct_variant(
         self,
-        name: &'static str,
-        variant_index: u32,
+        _name: &'static str,
+        _variant_index: u32,
         variant: &'static str,
-        len: usize,
-    ) -> JsResult<JsValue> {
-        todo!()
+        _len: usize,
+    ) -> JsResult<JsStructVariantSerializer> {
+        let obj = ffi::object();
+        let k = ffi::string(variant);
+        let sub = ffi::object();
+        ffi::object_append(obj, k, sub);
+        Ok(JsStructVariantSerializer { parent: obj, child: sub })
     }
 
     fn collect_str<T: Display + ?Sized>(self, value: &T) -> JsResult<JsValue> {
-        todo!()
+        Ok(JsValue::from_display(value))
     }
 }
 
@@ -191,11 +218,13 @@ impl SerializeSeq for JsValue {
     type Error = Self;
 
     fn serialize_element<T: Serialize + ?Sized>(&mut self, value: &T) -> JsResult<()> {
-        todo!()
+        let v = to_js(value)?;
+        ffi::array_append(*self, v);
+        Ok(())
     }
 
-    fn end(self) -> Result<Self, JsValue> {
-        todo!()
+    fn end(self) -> JsResult<JsValue> {
+        Ok(self)
     }
 }
 
@@ -205,11 +234,13 @@ impl SerializeTuple for JsValue {
     type Error = Self;
 
     fn serialize_element<T: Serialize + ?Sized>(&mut self, value: &T) -> JsResult<()> {
-        todo!()
+        let v = to_js(value)?;
+        ffi::array_append(*self, v);
+        Ok(())
     }
 
-    fn end(self) -> Result<Self, JsValue> {
-        todo!()
+    fn end(self) -> JsResult<JsValue> {
+        Ok(self)
     }
 }
 
@@ -219,43 +250,51 @@ impl SerializeTupleStruct for JsValue {
     type Error = Self;
 
     fn serialize_field<T: Serialize + ?Sized>(&mut self, value: &T) -> JsResult<()> {
-        todo!()
+        let v = to_js(value)?;
+        ffi::array_append(*self, v);
+        Ok(())
     }
 
-    fn end(self) -> Result<Self, JsValue> {
-        todo!()
+    fn end(self) -> JsResult<JsValue> {
+        Ok(self)
     }
 }
 
-impl SerializeTupleVariant for JsValue {
-    type Ok = Self;
+impl SerializeTupleVariant for JsTupleVariantSerializer {
+    type Ok = JsValue;
 
-    type Error = Self;
+    type Error = JsValue;
 
     fn serialize_field<T: Serialize + ?Sized>(&mut self, value: &T) -> JsResult<()> {
-        todo!()
+        let v = to_js(value)?;
+        ffi::array_append(self.child, v);
+        Ok(())
     }
 
-    fn end(self) -> Result<Self, JsValue> {
-        todo!()
+    fn end(self) -> JsResult<JsValue> {
+        Ok(self.parent)
     }
 }
 
-impl SerializeMap for JsValue {
-    type Ok = Self;
+impl SerializeMap for JsMapSerializer {
+    type Ok = JsValue;
 
-    type Error = Self;
+    type Error = JsValue;
 
     fn serialize_key<T: Serialize + ?Sized>(&mut self, key: &T) -> JsResult<()> {
-        todo!()
+        self.next_key = Some(to_js(key)?);
+        Ok(())
     }
 
     fn serialize_value<T: Serialize + ?Sized>(&mut self, value: &T) -> JsResult<()> {
-        todo!()
+        let k = self.next_key.take().unwrap();
+        let v = to_js(value)?;
+        ffi::object_append(self.obj, k, v);
+        Ok(())
     }
 
-    fn end(self) -> Result<Self, JsValue> {
-        todo!()
+    fn end(self) -> JsResult<JsValue> {
+        Ok(self.obj)
     }
 }
 
@@ -269,28 +308,38 @@ impl SerializeStruct for JsValue {
         key: &'static str,
         value: &T,
     ) -> JsResult<()> {
-        todo!()
+        let k = ffi::string(key);
+        let v = to_js(value);
+        Ok(())
     }
 
-    fn end(self) -> Result<Self, JsValue> {
-        todo!()
+    fn end(self) -> JsResult<JsValue> {
+        Ok(self)
     }
 }
 
-impl SerializeStructVariant for JsValue {
-    type Ok = Self;
+impl SerializeStructVariant for JsStructVariantSerializer {
+    type Ok = JsValue;
 
-    type Error = Self;
+    type Error = JsValue;
 
     fn serialize_field<T: Serialize + ?Sized>(
         &mut self,
         key: &'static str,
         value: &T,
     ) -> JsResult<()> {
-        todo!()
+        let k = ffi::string(key);
+        let v = to_js(value)?;
+        ffi::object_append(self.child, k, v);
+        Ok(())
     }
 
-    fn end(self) -> Result<Self, JsValue> {
-        todo!()
+    fn end(self) -> JsResult<JsValue> {
+        Ok(self.parent)
     }
+}
+
+/// Serializes a rust value into a js-owned one.
+pub fn to_js<T: Serialize + ?Sized>(val: &T) -> JsResult<JsValue> {
+    val.serialize(JsSerializer)
 }
