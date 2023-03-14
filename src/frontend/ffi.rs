@@ -12,7 +12,7 @@ mod exports {
 
     /// Allocates some bytes for js to write to.
     #[no_mangle]
-    fn __alloc(len: usize) -> *const u8 {
+    unsafe fn __alloc(len: usize) -> *const u8 {
         let layout = Layout::array::<u8>(len).unwrap();
         unsafe { alloc(layout) }
     }

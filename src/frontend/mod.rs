@@ -1,4 +1,4 @@
-use core::slice::from_raw_parts;
+use core::slice;
 
 use serde::de::DeserializeOwned;
 use serde::Serialize;
@@ -12,9 +12,8 @@ mod ffi;
 mod js;
 mod ser;
 
-
 pub unsafe fn decode<T: Serialize + DeserializeOwned>(ptr: *const u8, len: usize) -> JsResult<JsValue> {
-    let bytes = from_raw_parts(ptr, len);
+    let bytes = slice::from_raw_parts(ptr, len);
     let val: T = postcard::from_bytes(bytes)?;
     ser::to_js(&val)
 }
