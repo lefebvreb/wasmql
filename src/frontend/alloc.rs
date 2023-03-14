@@ -14,7 +14,7 @@ const PAGE_SIZE: usize = 65536;
 /// The bump allocator.
 struct BumpAllocator {
     /// Current position of the allocator, i.e. beginning of the free memory zone.
-    cursor: AtomicUsize,
+    offset: AtomicUsize,
 }
 
 unsafe impl GlobalAlloc for BumpAllocator {
@@ -22,27 +22,27 @@ unsafe impl GlobalAlloc for BumpAllocator {
     // enough memory.
     unsafe fn alloc(&self, layout: Layout) -> *mut u8 {
         let (start, end) = {
+            // Get layout alignment.
+            let align = layout.align();
             // Get current cursor.
-            let cursor = self.cursor.load(SeqCst);
-            // Compute padding needed to ensure correct alignment. 
-            let padding = layout.align() - (cursor % layout.align());
+            let offset = self.offset.load(SeqCst);
             // Add padding to the cursor.
-            let start = cursor + padding;
+            let start = (offset + align - 1) & !(align - 1);
             // Reserve enough bytes.
-            let end = cursor + layout.size();
-            // Update the cursor to point to the end of the memory zone.
-            self.cursor.store(end, SeqCst);
+            let end = start + layout.size();
+            // Update the offset to be at the end of the memory zone.
+            self.offset.store(end, SeqCst);
             // Yield the newly allocated zone's start and end addresses.
             (start, end)
         };
 
         {
             // Total amount of memory available.
-            let total = wasm32::memory_size(0) * PAGE_SIZE;
+            let total_mem = wasm32::memory_size(0) * PAGE_SIZE;
             // If we don't have enough memory.
-            if total < end {
+            if total_mem < end {
                 // Compute number of pages to request.
-                let delta = (end - total) / PAGE_SIZE;
+                let delta = (end - total_mem) / PAGE_SIZE;
                 // Grow memory.
                 if wasm32::memory_grow(0, delta) == usize::MAX {
                     // If growing failed, return NULL pointer to signify OOM error.
@@ -60,7 +60,7 @@ unsafe impl GlobalAlloc for BumpAllocator {
 }
 
 #[global_allocator]
-static GLOBAL: BumpAllocator = BumpAllocator { cursor: AtomicUsize::new(MIN_ADDRESS) };
+static GLOBAL: BumpAllocator = BumpAllocator { offset: AtomicUsize::new(MIN_ADDRESS) };
 
 /// Resets the allocator, not actually deleting anything.
 /// 
@@ -68,5 +68,5 @@ static GLOBAL: BumpAllocator = BumpAllocator { cursor: AtomicUsize::new(MIN_ADDR
 /// 
 /// The caller must ensure that no allocated objects currently exist in the program.
 pub unsafe fn reset() {
-    GLOBAL.cursor.store(MIN_ADDRESS, SeqCst);
+    GLOBAL.offset.store(MIN_ADDRESS, SeqCst);
 }
