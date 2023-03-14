@@ -1,3 +1,5 @@
+//! Serializing from rust type to js value.
+
 use core::fmt::Display;
 
 use serde::{Serializer, Serialize};

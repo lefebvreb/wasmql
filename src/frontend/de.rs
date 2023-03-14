@@ -1,3 +1,5 @@
+//! Deserializing from js value to rust type.
+
 use serde::de::Visitor;
 use serde::Deserializer;
 

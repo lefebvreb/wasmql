@@ -1,3 +1,5 @@
+use core::slice::from_raw_parts;
+
 use serde::de::DeserializeOwned;
 use serde::Serialize;
 
@@ -11,8 +13,8 @@ mod ffi;
 mod js;
 mod ser;
 
-pub fn decode<T: Serialize + DeserializeOwned>() -> Result<JsValue, JsValue> {
-    let bytes = ffi::buffer();
+pub unsafe fn decode<T: Serialize + DeserializeOwned>(ptr: *const u8, len: usize) -> Result<JsValue, JsValue> {
+    let bytes = from_raw_parts(ptr, len);
     let val: T = postcard::from_bytes(bytes)?;
     val.serialize(JsSerializer)
 }
@@ -21,5 +23,5 @@ pub fn encode<T: Serialize + DeserializeOwned>(v: JsValue) -> Result<JsValue, Js
     let mut deserializer = JsDeserializer(v);
     let val = T::deserialize(&mut deserializer)?;
     let bytes = postcard::to_allocvec(&val)?;
-    Ok()
+    Ok(JsValue::from_bytes(&bytes))
 }

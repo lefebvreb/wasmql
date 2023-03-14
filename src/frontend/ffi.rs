@@ -1,62 +1,52 @@
 //! All functions related to interfacing with javascript.
 
+use core::alloc::Layout;
 use core::fmt;
 
-use alloc::vec::Vec;
+use alloc::alloc::alloc;
 
 use super::js::JsValue;
 
-// All foreign functons need to be prefixed with a double underscore.
-// User-defined function will be prevented to begin with this prefix.
-extern "C" {
-    // Constructors
+mod env {
+    use super::*;
 
-    fn __bytes(ptr: u32, len: u32) -> JsValue;
-
-    fn __string(ptr: u32, len: u32) -> JsValue;
-
-    // Accessors
-
-    // Other
-
-    fn __log(v: JsValue);
-}
-
-static mut BUFFER: Vec<u8> = Vec::new();
-
-#[no_mangle]
-pub fn _alloc(len: u32) -> u32 {
-    unsafe {
-        BUFFER.clear();
-        BUFFER.reserve(len as usize);
-        BUFFER.set_len(len as usize);
-        BUFFER.as_ptr() as u32
+    extern "C" {
+        pub fn bytes(ptr: *const u8, len: usize) -> JsValue;
+    
+        pub fn string(ptr: *const u8, len: usize) -> JsValue;
+    
+        pub fn log(v: JsValue);
     }
 }
 
-pub fn buffer() -> &'static [u8] {
-    unsafe { &BUFFER }
+// All exported functions need to be prefixed with a double underscore.
+// User-defined function will be prevented to begin with this prefix.
+
+#[no_mangle]
+fn __alloc(len: usize) -> *const u8 {
+    let layout = Layout::array::<u8>(len).unwrap();
+    unsafe { alloc(layout) }
 }
 
-fn raw_str(v: &[u8]) -> (u32, u32) {
-    (v.as_ptr() as u32, v.len() as u32)
+#[no_mangle]
+fn __reset(len: usize) -> *const u8 {
+    let layout = Layout::array::<u8>(len).unwrap();
+    unsafe { alloc(layout) }
 }
 
 impl JsValue {
     pub fn from_bytes(v: &[u8]) -> JsValue {
-        let (ptr, len) = raw_str(v);
-        unsafe { __bytes(ptr, len) }
+        unsafe { env::bytes(v.as_ptr(), v.len()) }
     }
 
     pub fn from_string(v: &str) -> Self {
-        let (ptr, len) = raw_str(v.as_bytes());
-        unsafe { __string(ptr, len) }
+        unsafe { env::string(v.as_ptr(), v.len()) }
     }
 }
 
 impl fmt::Display for JsValue {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        unsafe { __log(*self) };
+        unsafe { env::log(*self) };
         Ok(())
     }
 }
