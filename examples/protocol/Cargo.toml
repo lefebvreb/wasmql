@@ -6,6 +6,7 @@ edition = "2021"
 [profile.release]
 lto = "thin"
 opt-level = "s"
+panic = "abort"
 
 [dependencies]
 wasmql = { path = "../.." }

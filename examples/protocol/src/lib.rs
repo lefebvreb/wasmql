@@ -1,14 +1,15 @@
-pub fn add(left: usize, right: usize) -> usize {
-    left + right
+#[wasmql::data]
+pub struct Item {
+    id: u128,
+    name: String,
+    done: bool,
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+#[wasmql::api]
+pub trait TodoApi {
+    fn items() -> Vec<Item>;
 
-    #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
-    }
+    fn create_item(item_name: String) -> Item;
+
+    fn mark_done(id: u128) -> Result<(), String>;
 }

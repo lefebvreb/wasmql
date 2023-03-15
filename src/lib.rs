@@ -2,8 +2,6 @@
 
 extern crate alloc;
 
-//pub use wasmql_macros::data;
-
 #[doc(hidden)]
 #[cfg(feature = "frontend")]
 pub mod frontend;
@@ -11,3 +9,8 @@ pub mod frontend;
 #[doc(hidden)]
 #[cfg(not(feature = "frontend"))]
 pub mod backend;
+
+#[doc(hidden)]
+pub use serde::{Serialize, Deserialize};
+
+pub use wasmql_macros::{api, data};

@@ -32,8 +32,9 @@ mod imports {
     use super::*;
 
     extern "C" {
+        // Creators/Mutators
         /// Creates a new `number`.
-        pub fn number(v: f64) -> JsValue;
+        pub fn number(num: f64) -> JsValue;
         /// Creates a new `string`.
         pub fn string(ptr: *const u8, len: usize) -> JsValue;
         /// Creates a new `Uint8Array`.
@@ -41,17 +42,21 @@ mod imports {
         /// Creates a new empty object `{}`.
         pub fn object() -> JsValue;
         /// Appends a new key-value pair to an `object`.
-        pub fn object_append(obj: JsValue, k: JsValue, v: JsValue) -> JsValue;
+        pub fn object_append(this: JsValue, key: JsValue, val: JsValue) -> JsValue;
         /// Creates a new array `[]`.
         pub fn array() -> JsValue;
         /// Appends a new value to an `array`.
-        pub fn array_append(arr: JsValue, v: JsValue) -> JsValue;
+        pub fn array_append(this: JsValue, val: JsValue) -> JsValue;
+
+        // Procedures
         /// Logs a js-owned value using `console.log`.
-        pub fn log(v: JsValue);
+        pub fn log(val: JsValue);
+        /// Throws the given js-owned value using a `throw` statement, and reset wasm memory.
+        pub fn throw(val: JsValue);
     }
 }
 
-pub const fn boolean(v: bool) -> JsValue {
+pub const fn from_boolean(v: bool) -> JsValue {
     JsValue(v as u32)
 }
 
@@ -63,34 +68,47 @@ pub const fn undefined() -> JsValue {
     JsValue(3)
 }
 
-pub fn number(v: f64) -> JsValue {
-    unsafe { imports::number(v) }
+pub fn from_number(num: f64) -> JsValue {
+    unsafe { imports::number(num) }
 }
 
-pub fn string(v: &str) -> JsValue {
-    unsafe { imports::string(v.as_ptr(), v.len()) }
+pub fn from_string(str: &str) -> JsValue {
+    unsafe { imports::string(str.as_ptr(), str.len()) }
 }
 
-pub fn bytes(v: &[u8]) -> JsValue {
-    unsafe { imports::bytes(v.as_ptr(), v.len()) }
+pub fn from_bytes(bytes: &[u8]) -> JsValue {
+    unsafe { imports::bytes(bytes.as_ptr(), bytes.len()) }
 }
 
-pub fn object() -> JsValue {
+pub fn new_object() -> JsValue {
     unsafe { imports::object() }
 }
 
-pub fn object_append(obj: JsValue, k: JsValue, v: JsValue) -> JsValue {
-    unsafe { imports::object_append(obj, k, v) }
+pub fn object_append(this: JsValue, key: JsValue, val: JsValue) -> JsValue {
+    unsafe { imports::object_append(this, key, val) }
 }
 
 pub fn array() -> JsValue {
     unsafe { imports::array() }
 }
 
-pub fn array_append(arr: JsValue, v: JsValue) -> JsValue {
-    unsafe { imports::array_append(arr, v) }
+pub fn array_append(this: JsValue, val: JsValue) -> JsValue {
+    unsafe { imports::array_append(this, val) }
 }
 
-pub fn log(v: JsValue) {
-    unsafe { imports::log(v) }
+// pub fn to_bytes(val: JsValue) -> &'static [u8] {
+//     unsafe {
+//         let ptr = imports::bytes_ptr(val);
+//         let len = imports::bytes_len(val);
+//         slice::from_raw_parts(ptr, len)
+//     }
+// }
+
+pub fn log(val: JsValue) {
+    unsafe { imports::log(val) }
+}
+
+pub fn throw(val: JsValue) -> ! {
+    unsafe { imports::throw(val) }
+    unreachable!()
 }

@@ -18,21 +18,19 @@ pub type JsResult<T> = Result<T, JsValue>;
 
 impl JsValue {
     pub(crate) fn from_display<T: Display>(v: T) -> Self {
-        ffi::string(&v.to_string())
+        ffi::from_string(&v.to_string())
     }
 }
 
 impl fmt::Debug for JsValue {
     fn fmt(&self, _f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        ffi::log(*self);
-        Ok(())
+        unimplemented!()
     }
 }
 
 impl fmt::Display for JsValue {
     fn fmt(&self, _f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        ffi::log(*self);
-        Ok(())
+        unimplemented!()
     }
 }
 
@@ -51,5 +49,18 @@ impl de::Error for JsValue {
 impl From<postcard::Error> for JsValue {
     fn from(err: postcard::Error) -> Self {
         Self::from_display(err)
+    }
+}
+
+pub trait UnwrapOrThrow<T> {
+    fn unwrap_or_throw(self) -> T;
+} 
+
+impl<T, E: Into<JsValue>> UnwrapOrThrow<T> for Result<T, E> {
+    fn unwrap_or_throw(self) -> T {
+        match self {
+            Ok(val) => val,
+            Err(err) => ffi::throw(err.into()),
+        }
     }
 }
