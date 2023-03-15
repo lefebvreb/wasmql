@@ -11,6 +11,6 @@ pub mod frontend;
 pub mod backend;
 
 #[doc(hidden)]
-pub use serde::{Serialize, Deserialize};
+pub use serde;
 
 pub use wasmql_macros::{api, data};

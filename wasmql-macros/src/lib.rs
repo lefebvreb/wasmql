@@ -112,7 +112,8 @@ pub fn data(_attr: TokenStream, input: TokenStream) -> TokenStream {
     }
 
     let tokens = quote! {
-        #[derive(::wasmql::Deserialize, ::wasmql::Serialize)]
+        #[derive(::wasmql::serde::Deserialize, ::wasmql::serde::Serialize)]
+        #[serde(crate = "::wasmql::serde")]
         #data
     };
 
