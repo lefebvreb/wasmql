@@ -1,5 +1,5 @@
 use proc_macro::TokenStream;
-use quote::quote;
+use quote::{quote, format_ident};
 use syn::{parse_macro_input, Item, ItemTrait, TraitItem, Visibility, FnArg, Receiver, PatType};
 
 macro_rules! error {
@@ -44,24 +44,28 @@ pub fn api(_attr: TokenStream, input: TokenStream) -> TokenStream {
 
         if !matches!(
             inputs.next(), 
-            Some(FnArg::Receiver(Receiver { attrs, reference: Some((_, None)), mutability: None, .. }))
+            Some(FnArg::Receiver(Receiver { attrs, reference: None, mutability: None, .. }))
             if attrs.is_empty()
         ) {
-            error!(sig.inputs, "the method's first argument must be &self");
+            error!(sig.inputs, "the method's first argument must be self");
         }
 
-        let Some(FnArg::Typed(PatType { attrs, .. })) = inputs.next() else {
+        let Some(FnArg::Typed(PatType { attrs, ty, .. })) = inputs.next() else {
             error!(sig.inputs, "the method must have a second argument.")
         };
+
+        if let Some(attr) = method.attrs.first() {
+            error!(attr, "the method's second argument must not have any attributes");
+        }
 
         if let Some(arg) = inputs.next() {
             error!(arg, "the method must have no more than 2 arguments");
         }
 
-        let rust_type = quote! { TODO };
+        let rust_type = ty;
 
-        let decoder = format!("dec_{}", sig.ident);
-        let encoder = format!("enc_{}", sig.ident);
+        let decoder = format_ident!("dec_{}", sig.ident);
+        let encoder = format_ident!("enc_{}", sig.ident);
 
         funcs.push(quote! {
             #[no_mangle]
@@ -77,7 +81,7 @@ pub fn api(_attr: TokenStream, input: TokenStream) -> TokenStream {
     }
 
     let tokens = quote! {
-        #[cfg(frontend = "frontend")]
+        #[cfg(target_arch = "wasm32")]
         #[allow(non_snake_case)]
         mod #name {
             use super::*;
@@ -85,7 +89,7 @@ pub fn api(_attr: TokenStream, input: TokenStream) -> TokenStream {
             #(#funcs)*
         }
 
-        #[cfg(not(frontend = "frontend"))]
+        #[cfg(not(target_arch = "wasm32"))]
         #input
     };
 
@@ -108,7 +112,7 @@ pub fn data(_attr: TokenStream, input: TokenStream) -> TokenStream {
     }
 
     let tokens = quote! {
-        #[derive(::wasmql::serde::Deserialize, ::wasmql::serde::Serialize)]
+        #[derive(::wasmql::Deserialize, ::wasmql::Serialize)]
         #data
     };
 

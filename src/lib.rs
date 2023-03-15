@@ -3,11 +3,11 @@
 extern crate alloc;
 
 #[doc(hidden)]
-#[cfg(feature = "frontend")]
+#[cfg(target_arch = "wasm32")]
 pub mod frontend;
 
 #[doc(hidden)]
-#[cfg(not(feature = "frontend"))]
+#[cfg(not(target_arch = "wasm32"))]
 pub mod backend;
 
 #[doc(hidden)]
