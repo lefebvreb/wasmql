@@ -54,7 +54,7 @@ pub fn api(_attr: TokenStream, input: TokenStream) -> TokenStream {
             error!(sig.inputs, "the method must have a second argument.")
         };
 
-        if let Some(attr) = method.attrs.first() {
+        if let Some(attr) = attrs.first() {
             error!(attr, "the method's second argument must not have any attributes");
         }
 

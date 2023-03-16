@@ -9,3 +9,6 @@ members = ["protocol"]
 [dependencies]
 poem = "1"
 wasmql = "../.."
+
+[build-dependencies]
+wasmql-build = "../../wasmql-build"

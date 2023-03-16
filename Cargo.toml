@@ -5,6 +5,7 @@ edition = "2021"
 
 [workspace]
 members = [
+    "wasmql-build",
     "wasmql-macros",
 ]
 exclude = [
@@ -16,6 +17,3 @@ exclude = [
 postcard = { version = "1", features = ["alloc"], default-features = false }
 serde = { version = "1", features = ["derive"], default-features = false }
 wasmql-macros = { path = "wasmql-macros" }
-
-[build-dependencies]
-minify-js = "0.5.6"

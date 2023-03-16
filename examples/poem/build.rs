@@ -1,5 +1,5 @@
-use io::Result;
+use std::io::Result;
 
 fn main() -> Result<()> {
-    wasmql::
+    wasmql_build::build_protocol()
 }
