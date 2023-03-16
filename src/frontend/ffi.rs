@@ -37,20 +37,18 @@ mod imports {
         pub fn number(num: f64) -> JsValue;
         /// Creates a new `string`.
         pub fn string(ptr: *const u8, len: usize) -> JsValue;
-        /// Creates a new `Uint8Array`.
+        /// Creates a new `ArrayBuffer`.
         pub fn bytes(ptr: *const u8, len: usize) -> JsValue;
         /// Creates a new empty object `{}`.
         pub fn object() -> JsValue;
         /// Appends a new key-value pair to an `object`.
-        pub fn object_append(this: JsValue, key: JsValue, val: JsValue) -> JsValue;
+        pub fn object_append(obj: JsValue, key: JsValue, val: JsValue);
         /// Creates a new array `[]`.
         pub fn array() -> JsValue;
         /// Appends a new value to an `array`.
-        pub fn array_append(this: JsValue, val: JsValue) -> JsValue;
+        pub fn array_append(obj: JsValue, val: JsValue);
 
         // Procedures
-        /// Logs a js-owned value using `console.log`.
-        pub fn log(val: JsValue);
         /// Throws the given js-owned value using a `throw` statement, and reset wasm memory.
         pub fn throw(val: JsValue);
     }
@@ -84,28 +82,16 @@ pub fn new_object() -> JsValue {
     unsafe { imports::object() }
 }
 
-pub fn object_append(this: JsValue, key: JsValue, val: JsValue) -> JsValue {
-    unsafe { imports::object_append(this, key, val) }
+pub fn object_append(obj: JsValue, key: JsValue, val: JsValue) {
+    unsafe { imports::object_append(obj, key, val) }
 }
 
 pub fn array() -> JsValue {
     unsafe { imports::array() }
 }
 
-pub fn array_append(this: JsValue, val: JsValue) -> JsValue {
-    unsafe { imports::array_append(this, val) }
-}
-
-// pub fn to_bytes(val: JsValue) -> &'static [u8] {
-//     unsafe {
-//         let ptr = imports::bytes_ptr(val);
-//         let len = imports::bytes_len(val);
-//         slice::from_raw_parts(ptr, len)
-//     }
-// }
-
-pub fn log(val: JsValue) {
-    unsafe { imports::log(val) }
+pub fn array_append(obj: JsValue, val: JsValue) {
+    unsafe { imports::array_append(obj, val) }
 }
 
 pub fn throw(val: JsValue) -> ! {

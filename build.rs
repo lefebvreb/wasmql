@@ -12,7 +12,7 @@ fn main() -> Result<()> {
 
     let mut out = Vec::new();
 
-    minify(&Session::new(), TopLevelMode::Global, &read(JS_LIB_PATH)?, &mut out)
+    minify(&Session::new(), TopLevelMode::Module, &read(JS_LIB_PATH)?, &mut out)
         .expect("syntax error");
 
     File::create(JS_MIN_PATH)?
