@@ -17,4 +17,4 @@ poem = "1"
 wasmql = { path = "../.." }
 
 [build-dependencies]
-wasmql = { path = "../.." }
+wasmql-build = { path = "../../wasmql-build" }

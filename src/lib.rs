@@ -1,8 +1,6 @@
-#![cfg_attr(target_arch = "wasm32", no_std)]
+#![allow(unused)] // todo: remove this
+#![no_std]
 
-#![allow(unused)]
-
-#[cfg(target_arch = "wasm32")]
 extern crate alloc;
 
 #[doc(hidden)]
@@ -12,9 +10,6 @@ pub mod frontend;
 #[doc(hidden)]
 #[cfg(not(target_arch = "wasm32"))]
 pub mod backend;
-
-#[cfg(any(doc, not(target_arch = "wasm32")))]
-pub mod build;
 
 #[doc(hidden)]
 pub use serde;

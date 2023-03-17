@@ -20,7 +20,7 @@ pub struct CreateItem {
 
 #[wasmql::api]
 pub trait TodoApi {
-    fn items(self, _request: ()) -> Vec<Item>;
+    fn items(self, _in: ()) -> Vec<Item>;
 
     fn create_item(self, item: CreateItem) -> Item;
 

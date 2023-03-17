@@ -1,0 +1,10 @@
+[package]
+name = "wasmql-build"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+path = "lib.rs"
+
+[build-dependencies]
+minify-js = { version = "0.5.6", default-features = false }

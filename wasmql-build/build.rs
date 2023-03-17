@@ -5,14 +5,14 @@ use std::path::Path;
 
 use minify_js::{Session, TopLevelMode};
 
-const JS_LIB_PATH: &str = "src/wasmql.js";
+const JS_LIB_PATH: &str = "../src/wasmql.js";
 
 fn main() -> Result<()> {
     println!("cargo:rerun-if-changed={JS_LIB_PATH}");
 
     let mut out = Vec::new();
 
-    minify_js::minify(&Session::new(), TopLevelMode::Module, &read("src/wasmql.js")?, &mut out)
+    minify_js::minify(&Session::new(), TopLevelMode::Module, &read(JS_LIB_PATH)?, &mut out)
         .expect("js syntax error");
 
     let out_file = Path::new(&env::var("OUT_DIR").unwrap())

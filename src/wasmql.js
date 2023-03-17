@@ -1,5 +1,5 @@
 export default async function ({ endpoint, wasm }) {
-    // Memory and exported functinos of the wasm module instance.
+    // Memory and exported functions of the wasm module instance.
     let exports, memory;
 
     // Js-owned values table.
@@ -18,7 +18,7 @@ export default async function ({ endpoint, wasm }) {
     // Copies some bytes into wasm.
     function copy(bytes) {
         const len = bytes.length;
-        const ptr = exports.__alloc(bytes.length);
+        const ptr = exports.__alloc(len);
         const view = new Uint8Array(memory, ptr, len);
         view.set(new Uint8Array(bytes));
         return [ptr, len]
@@ -65,20 +65,17 @@ export default async function ({ endpoint, wasm }) {
     let result = {};
 
     // Makes a request with the given object, encoder and decoder functions.
-    async function query(input, enc_func, dec_func) {
+    async function query(input, enc_fn, dec_fn) {
         // Get encoded body and reset module.
-        let body = table[enc_func(input)];
+        let body = table[enc_fn(input)];
         reset();
         // Perform the requets and extract bytes.
-        let response = await fetch(endpoint, {
-            method: 'POST',
-            body,
-        });
-        let bytes = await response.arrayBuffer();
+        let bytes = await fetch(endpoint, { method: 'POST', body })
+            .then((res) => res.arrayBuffer());
         // Copy bytes into wasm memory.
         let [ptr, len] = copy(bytes);
         // Decode result and reset module.
-        let output = table[dec_func(ptr, len)];
+        let output = table[dec_fn(ptr, len)];
         reset();
         // Return output.
         return output;
