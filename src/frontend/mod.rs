@@ -2,6 +2,7 @@ mod alloc;
 mod de;
 mod ffi;
 mod js;
+mod panic;
 mod ser;
 
 use core::slice;

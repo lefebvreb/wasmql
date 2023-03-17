@@ -8,6 +8,35 @@ macro_rules! error {
     };
 }
 
+/// Attribute for marking a rust trait as defining a WasmQL API.
+/// 
+/// This attribute can be applied to a rust trait that only contains
+/// methods, whose signatures are `fn(self, T) -> U` where `T` and
+/// `U` are enums or structs marked with the `#[data]` attribute.
+/// 
+/// This attribute has no effects to the underlying trait if compiled for
+/// the backend, but will drastically change it if compiled to `wasm32`.
+/// 
+/// # Examples
+/// 
+/// ```no_run
+/// # use wasmql_macros::{api, data};
+/// #[data]
+/// pub struct Login {
+///     username: String,
+///     password: String,
+/// }
+/// 
+/// #[data]
+/// pub struct Session(String);
+/// 
+/// #[api]
+/// pub trait MyApi {
+///     fn login(self, login: Login) -> Session;
+/// 
+///     fn get_resource(self, session: Session) -> String;
+/// }
+/// ```
 #[proc_macro_attribute]
 pub fn api(_attr: TokenStream, input: TokenStream) -> TokenStream {
     let api = parse_macro_input!(input as ItemTrait);
@@ -96,6 +125,33 @@ pub fn api(_attr: TokenStream, input: TokenStream) -> TokenStream {
     tokens.into()
 }
 
+/// Attribute for marking a rust type as a WasmQL data-transfer object.
+/// 
+/// This attribute can be applied to an enum or struct definition.
+/// It is simply an alias for deriving [`serde`](https://docs.rs/serde/latest/serde/)'s 
+/// [`Serialize`](https://docs.rs/serde/latest/serde/trait.Serialize.html) and [`Deserialize`](https://docs.rs/serde/latest/serde/trait.Deserialize.html) traits,
+/// without the need to add `serde` as an explicit dependency and importing the relevant
+/// derive macros in scope.
+/// 
+/// A type marked as `data` can then be used as input or output for an API method, this is why
+/// this type must be public.
+/// 
+/// # Examples
+/// 
+/// ```no_run
+/// # use wasmql_macros::data;
+/// #[data]
+/// pub struct Person {
+///     name: String,
+///     age: i64,
+/// }
+/// 
+/// #[data]
+/// pub enum User {
+///     Unlogged,
+///     Logged(Person),
+/// }
+/// ```
 #[proc_macro_attribute]
 pub fn data(_attr: TokenStream, input: TokenStream) -> TokenStream {
     let data = parse_macro_input!(input as Item);
@@ -103,8 +159,7 @@ pub fn data(_attr: TokenStream, input: TokenStream) -> TokenStream {
     let vis = match &data {
         Item::Enum(item) => &item.vis,
         Item::Struct(item) => &item.vis,
-        Item::Union(item) => &item.vis,
-        _ => error!(data, "the attribute must only be used on an enum, struct or union definition"),
+        _ => error!(data, "the attribute must only be used on an enum or struct definition"),
     };
 
     if !matches!(vis, Visibility::Public(_)) {

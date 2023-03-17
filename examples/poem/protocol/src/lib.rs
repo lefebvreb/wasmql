@@ -1,3 +1,9 @@
+#![no_std]
+
+extern crate alloc;
+
+use alloc::string::String;
+
 #[wasmql::data]
 pub struct Item {
     id: u128,
