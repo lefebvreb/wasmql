@@ -63,11 +63,13 @@ export default async function ({ endpoint, wasm }) {
     let result = {};
 
     // Makes a request with the given object, encoder and decoder functions.
-    async function query(input, enc_fn, dec_fn) {
-        // Get encoded body and reset module.
-        let body = table[enc_fn(input)];
+    async function query(args, enc_fn, dec_fn) {
+        // Turn args into a value.
+        let val = value(args);
+        // Encode value into bytes, and reset module.
+        let body = table[enc_fn(val)];
         reset();
-        // Perform the requets and extract bytes.
+        // Perform the requets and extract the resulting bytes.
         let bytes = await fetch(endpoint, { method: 'POST', body })
             .then((res) => res.arrayBuffer());
         // Copy bytes into wasm memory.
@@ -88,7 +90,7 @@ export default async function ({ endpoint, wasm }) {
             // Counterpart decoding function.
             let dec_fn = exports['dec_' + name];
             // Make the request function.
-            result[name] = (obj) => query(obj, enc_fn, dec_fn);
+            result[name] = (...args) => query(args, enc_fn, dec_fn);
         }
     }
 

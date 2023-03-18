@@ -1,6 +1,8 @@
 use proc_macro::TokenStream;
 use quote::{quote, format_ident};
-use syn::{parse_macro_input, Item, ItemTrait, TraitItem, Visibility, FnArg, Receiver, PatType};
+use syn::punctuated::Punctuated;
+use syn::token::Paren;
+use syn::{parse_macro_input, Item, ItemTrait, TraitItem, Visibility, FnArg, Receiver, PatType, TypeTuple, Index};
 
 macro_rules! error {
     ($tokens: expr, $message: expr) => {
@@ -38,74 +40,100 @@ macro_rules! error {
 /// ```
 #[proc_macro_attribute]
 pub fn api(_attr: TokenStream, input: TokenStream) -> TokenStream {
-    let api = parse_macro_input!(input as ItemTrait);
-    let input = api.clone();
+    let input = parse_macro_input!(input as ItemTrait);
 
-    let name = api.ident;
+    let name = &input.ident;
 
-    if !matches!(api.vis, Visibility::Public(_)) {
-        error!(api.vis, "the trait must be public");
+    if !matches!(input.vis, Visibility::Public(_)) {
+        error!(input.vis, "the trait must be public");
     }
 
-    let mut funcs = vec![];
+    // Wasm funcs exported to js for encoding/decoding. 
+    let mut extern_funcs = vec![];
 
-    for item in api.items {
-        let TraitItem::Method(method) = item else {
+    // Arms of the match expression in the backend dispatcher. 
+    let mut dispatcher_arms = vec![];
+
+    // For each item in this trait.
+    for (i, item) in input.items.iter().enumerate() {
+        // Is a method.
+        let TraitItem::Fn(fun) = item else {
             error!(item, "the trait must only contain methods");
         };
 
-        if let Some(attr) = method.attrs.first() {
+        // Method has no attributes.
+        if let Some(attr) = fun.attrs.first() {
             error!(attr, "the method must not have any attributes");
         }
 
-        if let Some(default) = method.default {
+        // Method has no body.
+        if let Some(default) = &fun.default {
             error!(default, "the method must not have a default body");
         }
 
-        let sig = method.sig;
+        let sig = &fun.sig;
+        let ident = &sig.ident;
 
-        if sig.ident.to_string().starts_with("__") {
-            error!(sig.ident, "the method identifier must not begin with a double underscore");
+        // Name does not begin with "__".
+        if ident.to_string().starts_with("__") {
+            error!(ident.clone(), "the method identifier must not begin with a double underscore");
         }
 
         let mut inputs = sig.inputs.iter();
 
-        if !matches!(
-            inputs.next(), 
-            Some(FnArg::Receiver(Receiver { attrs, reference: None, mutability: None, .. }))
-            if attrs.is_empty()
-        ) {
-            error!(sig.inputs, "the method's first argument must be self");
-        }
-
-        let Some(FnArg::Typed(PatType { attrs, ty, .. })) = inputs.next() else {
-            error!(sig.inputs, "the method must have a second argument.")
+        // First argument must be `self`.
+        let Some(FnArg::Receiver(Receiver { attrs, reference: None, mutability: None, .. })) = inputs.next() else {
+            error!(&sig.inputs[0], "the method's first argument must be self");
         };
 
+        // First argument must not have attributes.
         if let Some(attr) = attrs.first() {
-            error!(attr, "the method's second argument must not have any attributes");
+            error!(attr, "the method's inputs must not have any attributes");
         }
 
-        if let Some(arg) = inputs.next() {
-            error!(arg, "the method must have no more than 2 arguments");
+        // Argument tuple (excluding self).
+        let mut tuple = TypeTuple {
+            paren_token: Paren::default(),
+            elems: Punctuated::new(),
+        };
+
+        // For each subsequent arguments to this trait method.
+        for arg in inputs {
+            let FnArg::Typed(PatType { attrs, ty, .. }) = arg else { unreachable!() };
+
+            // Argument has no attributes.
+            if let Some(attr) = attrs.first() {
+                error!(attr, "the method's arguments must not have any attributes");
+            }
+
+            tuple.elems.push(*ty.clone());
         }
 
-        let rust_type = ty;
+        // Names of the decoder and encoder funcs.
+        let decoder = format_ident!("dec_{}", ident);
+        let encoder = format_ident!("enc_{}", ident);
 
-        let decoder = format_ident!("dec_{}", sig.ident);
-        let encoder = format_ident!("enc_{}", sig.ident);
-
-        funcs.push(quote! {
+        extern_funcs.push(quote! {
             #[no_mangle]
-            unsafe fn #decoder (ptr: *mut u8, len: usize) -> ::wasmql::frontend::JsValue {
-                ::wasmql::frontend::decode::<#rust_type>(ptr, len)
+            unsafe fn #decoder(ptr: *mut u8, len: usize) -> ::wasmql::frontend::JsValue {
+                ::wasmql::frontend::decode::<#tuple>(ptr, len)
             }
 
             #[no_mangle]
-            fn #encoder (val: ::wasmql::frontend::JsValue) -> ::wasmql::frontend::JsValue {
-                ::wasmql::frontend::encode::<#rust_type>(val)
+            fn #encoder(val: ::wasmql::frontend::JsValue) -> ::wasmql::frontend::JsValue {
+                ::wasmql::frontend::encode::<#tuple>(val)
             }
-        })
+        });
+
+        let indexes = (0..tuple.elems.len()).map(Index::from);
+
+        dispatcher_arms.push(quote! {
+            #i => {
+                let tuple = ::wasmql::backend::decode::<#tuple>(bytes)?;
+                let value = self.#ident(#(tuple.#indexes),*);
+                ::wasmql::backend::encode(&value)
+            }
+        });
     }
 
     let tokens = quote! {
@@ -114,7 +142,7 @@ pub fn api(_attr: TokenStream, input: TokenStream) -> TokenStream {
         mod #name {
             use super::*;
 
-            #(#funcs)*
+            #(#extern_funcs)*
         }
 
         #[cfg(not(target_arch = "wasm32"))]

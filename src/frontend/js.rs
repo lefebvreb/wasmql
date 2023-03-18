@@ -51,16 +51,3 @@ impl From<postcard::Error> for JsValue {
         Self::from_display(err)
     }
 }
-
-pub trait UnwrapOrThrow<T> {
-    fn unwrap_or_throw(self) -> T;
-} 
-
-impl<T, E: Into<JsValue>> UnwrapOrThrow<T> for Result<T, E> {
-    fn unwrap_or_throw(self) -> T {
-        match self {
-            Ok(val) => val,
-            Err(err) => ffi::throw(err.into()),
-        }
-    }
-}

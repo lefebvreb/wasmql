@@ -1,7 +1,7 @@
 //! Utilities for build scripts of projects using the WasmQL library.
 //! 
-//! Generally, you would want to include both the (minified) javascript library 
-//! to your static files folder, along your compiled and up-to-date wasm codecs.
+//! Generally, you would want to include both the (minified) WasmQL javascript library 
+//! to your static files folder, along with your compiled and up-to-date wasm codec(s).
 //! 
 //! You can use this crate to do just that. First, add this crate to the
 //! build dependencies of your project, in `Cargo.toml`:
@@ -17,8 +17,10 @@
 //! use std::io::Result;
 //!
 //! fn main() -> Result<()> {
+//!     // Destination path of the minified js lib.
 //!     wasmql_build::export_minified_js("static/wasmql.min.js")?;
-//!     wasmql_build::compile_wasm_module("my-codec", "static/codec.wasm")?;
+//!     // Name of the crate containing your codec, path to write the generated wasm binary to.
+//!     wasmql_build::compile_wasm_codec("my-codec", "static/codec.wasm")?;
 //!     Ok(())
 //! }
 //! ```

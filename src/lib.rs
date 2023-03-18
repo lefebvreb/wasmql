@@ -16,7 +16,7 @@ pub mod backend;
 pub mod prelude {
     //! `use wasmql::prelude::*;` to import types missing in `no_std` environment.
     //! 
-    //! Since it is *highly adivsed* to use wasmql in a `no_std` environment (to reduce
+    //! Since it is **highly adivsed** to use wasmql in a `no_std` environment (to reduce
     //! binary file), you will be missing a few common rust types like [`Box`], [`Vec`] or [`String`].
     //! 
     //! This module simply re-exports those items from the `alloc` crate.
