@@ -1,9 +1,17 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <script src="/wasmql.min.js" type="module"></script>
     </head>
     <body>
-        
+        <script type="module">
+            import wasmql from '/wasmql.js';
+
+            const api = await wasmql({
+                endpoint: "/wasmql",
+                wasm: "/codec.wasm"
+            });
+
+            let items = await api.items();
+        </script>
     </body>
 </html>

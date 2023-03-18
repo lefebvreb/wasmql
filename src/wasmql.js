@@ -24,7 +24,7 @@ export default async function ({ endpoint, wasm }) {
 
     // Resets the wasm module and js values table.
     function reset() {
-        exports.reset();
+        exports.__reset();
         table.length = 4;
     };
 
@@ -32,11 +32,11 @@ export default async function ({ endpoint, wasm }) {
     const imports = {
         number: (num) => value(num),
         string: (ptr, len) => {
-            const view = new Uint8Array(mod.memory.buffer, ptr, len);
-            return value(text_decoder(view));
+            const view = new Uint8Array(memory, ptr, len);
+            return value(text_decoder.decode(view));
         },
         bytes: (ptr, len) => {
-            const view = new Uint8Array(mod.memory.buffer, ptr, len);
+            const view = new Uint8Array(memory, ptr, len);
             return value(view.buffer);
         },
         object: () => value({}),
@@ -55,9 +55,9 @@ export default async function ({ endpoint, wasm }) {
     };
     
     // Instantiate wasm module.
-    const wasm = await WebAssembly.instantiateStreaming(fetch(wasm), { env: imports });
-    exports = wasm.instance.exports;
-    memory = wasm.memory.buffer;
+    const module = await WebAssembly.instantiateStreaming(fetch(wasm), { env: imports });
+    exports = module.instance.exports;
+    memory = exports.memory.buffer;
 
     // Result object.
     let result = {};
@@ -80,11 +80,11 @@ export default async function ({ endpoint, wasm }) {
     };
 
     // For each exported function.
-    for (let enc_fn of exports) {
+    for (const [enc_fn_name, enc_fn] of Object.entries(exports)) {
         // If the function name starts with 'enc_', i.e. it is an encoding function.
-        if (enc_fn.name.startsWith('enc_')) {
+        if (enc_fn_name.startsWith('enc_')) {
             // Name of the original function.
-            let name = enc_fn.name.substring(4);
+            let name = enc_fn_name.substring(4);
             // Counterpart decoding function.
             let dec_fn = exports['dec_' + name];
             // Make the request function.

@@ -4,16 +4,11 @@ version = "0.1.0"
 edition = "2021"
 
 [workspace]
-members = ["protocol"]
-
-[profile.release]
-lto = "thin"
-opt-level = "z"
-panic = "abort"
-strip = "symbols"
+members = ["codec"]
 
 [dependencies]
-poem = "1"
+poem = { version = "1", features = ["static-files"] }
+tokio = { version = "1", features = ["rt-multi-thread"] }
 wasmql = { path = "../.." }
 
 [build-dependencies]
