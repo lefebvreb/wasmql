@@ -20,17 +20,16 @@ macro_rules! error {
 /// # Examples
 /// 
 /// ```no_run
-/// # use wasmql_macros::{api, data};
-/// #[data]
+/// #[wasmql::data]
 /// pub struct Login {
 ///     username: String,
 ///     password: String,
 /// }
 /// 
-/// #[data]
+/// #[wasmql::data]
 /// pub struct Session(String);
 /// 
-/// #[api]
+/// #[wasmql::api]
 /// pub trait MyApi {
 ///     fn login(self, login: Login) -> Session;
 /// 
@@ -139,14 +138,13 @@ pub fn api(_attr: TokenStream, input: TokenStream) -> TokenStream {
 /// # Examples
 /// 
 /// ```no_run
-/// # use wasmql_macros::data;
-/// #[data]
+/// #[wasmql::data]
 /// pub struct Person {
 ///     name: String,
 ///     age: i64,
 /// }
 /// 
-/// #[data]
+/// #[wasmql::data]
 /// pub enum User {
 ///     Unlogged,
 ///     Logged(Person),
