@@ -3,7 +3,7 @@ export default async function ({ endpoint, wasm }) {
     let exports, memory;
 
     // Js-owned values table.
-    const table = [false, true, null, undefined];
+    let table = [false, true, null, undefined];
 
     // Appends a new value to the table, returning it's idx.
     function value(obj) {
@@ -11,13 +11,13 @@ export default async function ({ endpoint, wasm }) {
     }
 
     // Text decoder, to convert between utf-16 (js) and utf-8 (wasm).
-    const text_decoder = new TextDecoder();
+    let text_decoder = new TextDecoder();
 
     // Copies some bytes into wasm.
     function copy(bytes) {
-        const len = bytes.length;
-        const ptr = exports.__alloc(len);
-        const view = new Uint8Array(memory, ptr, len);
+        let len = bytes.length;
+        let ptr = exports.__alloc(len);
+        let view = new Uint8Array(memory, ptr, len);
         view.set(new Uint8Array(bytes));
         return [ptr, len]
     }
@@ -29,14 +29,14 @@ export default async function ({ endpoint, wasm }) {
     };
 
     // Imports given to the wasm module instance.
-    const imports = {
+    let imports = {
         number: (num) => value(num),
         string: (ptr, len) => {
-            const view = new Uint8Array(memory, ptr, len);
+            let view = new Uint8Array(memory, ptr, len);
             return value(text_decoder.decode(view));
         },
         bytes: (ptr, len) => {
-            const view = new Uint8Array(memory, ptr, len);
+            let view = new Uint8Array(memory, ptr, len);
             return value(view.buffer);
         },
         object: () => value({}),
@@ -55,7 +55,7 @@ export default async function ({ endpoint, wasm }) {
     };
     
     // Instantiate wasm module.
-    const module = await WebAssembly.instantiateStreaming(fetch(wasm), { env: imports });
+    let module = await WebAssembly.instantiateStreaming(fetch(wasm), { env: imports });
     exports = module.instance.exports;
     memory = exports.memory.buffer;
 
