@@ -151,11 +151,11 @@ impl Serializer for JsSerializer {
     }
 
     fn serialize_seq(self, _len: Option<usize>) -> JsResult<JsValue> {
-        Ok(ffi::array())
+        Ok(ffi::new_array())
     }
 
     fn serialize_tuple(self, _len: usize) -> JsResult<JsValue> {
-        Ok(ffi::array())
+        Ok(ffi::new_array())
     }
 
     fn serialize_tuple_struct(
@@ -163,7 +163,7 @@ impl Serializer for JsSerializer {
         _name: &'static str,
         _len: usize,
     ) -> JsResult<JsValue> {
-        Ok(ffi::array())
+        Ok(ffi::new_array())
     }
 
     fn serialize_tuple_variant(
@@ -175,7 +175,7 @@ impl Serializer for JsSerializer {
     ) -> JsResult<JsTupleVariantSerializer> {
         let obj = ffi::new_object();
         let k = ffi::from_string(variant);
-        let arr = ffi::array();
+        let arr = ffi::new_array();
         ffi::object_append(obj, k, arr);
         Ok(JsTupleVariantSerializer { parent: obj, child: arr })
     }

@@ -86,7 +86,7 @@ pub fn object_append(obj: JsValue, key: JsValue, val: JsValue) {
     unsafe { imports::object_append(obj, key, val) }
 }
 
-pub fn array() -> JsValue {
+pub fn new_array() -> JsValue {
     unsafe { imports::array() }
 }
 
