@@ -124,10 +124,10 @@ pub fn api(_attr: TokenStream, input: TokenStream) -> TokenStream {
         // Arm of the match expression in the dispatcher function.
         dispatcher_arms.push(quote! {
             #i => {
-                let tuple = ::wasmql::backend::decode::<#tuple>(bytes)?;
-                let value = self.#fn_ident(#(t.#indexes),*);
-                let bytes = ::wasmql::backend::encode(&value)?;
-                Ok(bytes)
+                let args: #tuple = ::wasmql::backend::decode(bytes).unwrap();
+                let ret = self.#fn_ident(#(args.#indexes),*);
+                let bytes = ::wasmql::backend::encode(&ret).unwrap();
+                bytes
             }
         });
 
@@ -148,16 +148,22 @@ pub fn api(_attr: TokenStream, input: TokenStream) -> TokenStream {
         });
     }
 
-    // Append the dispatch
+    // Append the dispatch function.
     input.items.push({
         let tokens = quote! {
-            fn __dispatch(self, bytes: &[u8]) -> ::wasmql::prelude::Vec<u8> {
-                let discriminant
+            fn __dispatch(self, bytes: &[u8]) -> ::wasmql::prelude::Vec<u8> 
+            where
+                Self: Sized,
+            {
+                let discriminant = match bytes.len() {
+                    0 | 1 => panic!(),
+                    n => u16::from_le_bytes(bytes[n - 2..].try_into().unwrap()),
+                };
 
-                match bytes.last().unwrap() as usize {
+                match discriminant {
                     #(#dispatcher_arms)*
                     _ => unreachable!()
-                }.unwrap()
+                }
             }
         }.into();
 
