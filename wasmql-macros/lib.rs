@@ -115,19 +115,18 @@ pub fn api(_attr: TokenStream, input: TokenStream) -> TokenStream {
             tuple.elems.push(*ty.clone());
         }
 
+        // Make tuple trailing and get indexes over its components.
+        let indexes = (0..tuple.elems.len()).map(Index::from);
         if !tuple.elems.empty_or_trailing() {
             tuple.elems.push_punct(Comma::default());
         }
-
-        let indexes = (0..tuple.elems.len()).map(Index::from);
     
         // Arm of the match expression in the dispatcher function.
         dispatcher_arms.push(quote! {
             #i => {
-                let args: #tuple = ::wasmql::backend::decode(bytes).unwrap();
-                let ret = self.#fn_ident(#(args.#indexes),*);
-                let bytes = ::wasmql::backend::encode(&ret).unwrap();
-                bytes
+                let arg = ::wasmql::backend::decode::<#tuple>(bytes)?;
+                let ret = self.#fn_ident(#(arg.#indexes),*);
+                Ok(::wasmql::backend::encode(&ret)?)
             }
         });
 
@@ -151,18 +150,22 @@ pub fn api(_attr: TokenStream, input: TokenStream) -> TokenStream {
     // Append the dispatch function.
     input.items.push({
         let tokens = quote! {
-            fn __dispatch(self, bytes: &[u8]) -> ::wasmql::prelude::Vec<u8> 
+            /// Dispatches a message to this codec.
+            /// 
+            /// This method is provided and does not need to be reimplemented.
+            /// 
+            /// First, this method decodes the raw `bytes` of the message. On success, 
+            /// the correct handling method is called on `self` with the decoded value. Then,
+            /// the result is encoded and returned as a `Vec<u8>`.
+            /// 
+            /// 
+            fn __dispatch(self, bytes: &[u8]) -> ::wasmql::error::Result<::wasmql::prelude::Vec<u8>>
             where
                 Self: Sized,
             {
-                let discriminant = match bytes.len() {
-                    0 | 1 => panic!(),
-                    n => u16::from_le_bytes(bytes[n - 2..].try_into().unwrap()),
-                };
-
-                match discriminant {
+                match ::wasmql::backend::discriminant(bytes)? {
                     #(#dispatcher_arms)*
-                    _ => unreachable!()
+                    _ => Err(::wasmql::error::Error::DispatchError),
                 }
             }
         }.into();

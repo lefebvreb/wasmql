@@ -16,12 +16,6 @@ pub struct JsValue(pub(crate) u32);
 /// A result that can be passed back to js.
 pub type JsResult<T> = Result<T, JsValue>;
 
-impl JsValue {
-    pub(crate) fn from_display<T: Display>(v: T) -> Self {
-        ffi::from_string(&v.to_string())
-    }
-}
-
 impl fmt::Debug for JsValue {
     fn fmt(&self, _f: &mut fmt::Formatter<'_>) -> fmt::Result {
         unimplemented!()
@@ -36,18 +30,18 @@ impl fmt::Display for JsValue {
 
 impl ser::Error for JsValue {
     fn custom<T: Display>(msg: T) -> Self {
-        Self::from_display(msg)
+        unimplemented!()
     }
 }
 
 impl de::Error for JsValue {
     fn custom<T: Display>(msg: T) -> Self {
-        Self::from_display(msg)
+        unimplemented!()
     }
 }
 
 impl From<postcard::Error> for JsValue {
     fn from(err: postcard::Error) -> Self {
-        Self::from_display(err)
+        unimplemented!()
     }
 }

@@ -206,10 +206,6 @@ impl Serializer for JsSerializer {
         ffi::object_append(obj, k, sub);
         Ok(JsStructVariantSerializer { parent: obj, child: sub })
     }
-
-    fn collect_str<T: Display + ?Sized>(self, value: &T) -> JsResult<JsValue> {
-        Ok(JsValue::from_display(value))
-    }
 }
 
 impl SerializeSeq for JsValue {

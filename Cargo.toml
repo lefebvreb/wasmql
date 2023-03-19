@@ -9,6 +9,9 @@ members = [
     "wasmql-macros",
 ]
 
+[package.metadata.docs.rs]
+rustdoc-args = ["--cfg", "doc_cfg"]
+
 [dependencies]
 postcard = { version = "1", features = ["alloc"], default-features = false }
 serde = { version = "1", features = ["derive"], default-features = false }

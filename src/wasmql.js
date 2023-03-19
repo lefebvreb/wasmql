@@ -6,8 +6,8 @@ export default async function ({ endpoint, wasm }) {
     let table = [false, true, null, undefined];
 
     // Appends a new value to the table, returning it's idx.
-    function value(obj) {
-        return table.push(obj) - 1;
+    function value(val) {
+        return table.push(val) - 1;
     }
 
     // Text decoder, to convert between utf-16 (js) and utf-8 (wasm).

@@ -1,27 +1,19 @@
-use postcard::Result;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
-#[derive(Clone, Eq, PartialEq, Debug, Error)]
-pub enum Error<E> {
-    #[error("codec error: {0}")]
-    Postcard(postcard::Error),
-    #[error("missing discriminant")]
-    MissingDiscriminant,
-    #[error("handler error: {0}")]
-    Handler(E),
-}
+use crate::error::{Error, Result};
 
-impl<E> From<postcard::Error> for Error<E> {
-    fn from(err: postcard::Error) -> Self {
-        Self::Postcard(err)
+pub fn discriminant(bytes: &[u8]) -> Result<u16> {
+    match bytes {
+        &[.., lo, hi] => Ok(u16::from_le_bytes([lo, hi])),
+        _ => Err(Error::DispatchError),
     }
 }
 
 pub fn decode<'a, T: Deserialize<'a>>(bytes: &'a [u8]) -> Result<T> {
-    postcard::from_bytes(bytes)
+    Ok(postcard::from_bytes(bytes)?)
 }
 
 pub fn encode<T: Serialize>(value: &T) -> Result<Vec<u8>> {
-    postcard::to_allocvec(value)
+    Ok(postcard::to_allocvec(value)?)
 }
