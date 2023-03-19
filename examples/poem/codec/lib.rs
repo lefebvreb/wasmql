@@ -6,21 +6,21 @@ use wasmql::prelude::*;
 pub struct Item {
     id: u128,
     name: String,
-    data: String,
+    desc: String,
     done: bool,
 }
 
 #[wasmql::data]
 pub struct CreateItem {
     name: String,
-    data: String,
+    desc: String,
 }
 
 #[wasmql::api]
 pub trait TodoApi {
-    fn items(self, _in: ()) -> Vec<Item>;
+    fn items(self) -> Vec<Item>;
 
-    fn create_item(self, item: CreateItem) -> Item;
+    fn create_item(self, name: String, data: String) -> Item;
 
-    fn mark_done(self, id: u128) -> Result<(), String>;
+    fn mark_done(self, id: u128);
 }

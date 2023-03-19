@@ -18,8 +18,9 @@ pub unsafe fn decode<T: Serialize + DeserializeOwned>(ptr: *mut u8, len: usize) 
     ser::to_js(&val).unwrap()
 }
 
-pub fn encode<T: Serialize + DeserializeOwned>(val: JsValue) -> JsValue {
+pub fn encode<T: Serialize + DeserializeOwned>(val: JsValue, code: u16) -> JsValue {
     let val: T = de::from_js(val).unwrap();
-    let bytes = postcard::to_allocvec(&val).unwrap();
+    let mut bytes = postcard::to_allocvec(&val).unwrap();
+    bytes.extend(&code.to_le_bytes());
     ffi::from_bytes(&bytes)
 }

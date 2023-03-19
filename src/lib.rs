@@ -1,7 +1,8 @@
 //! WasmQL
 
+#![cfg_attr(target_arch = "wasm32", no_std)]
+
 #![allow(unused)] // todo: remove this
-#![no_std]
 
 extern crate alloc;
 

@@ -13,3 +13,6 @@ members = [
 postcard = { version = "1", features = ["alloc"], default-features = false }
 serde = { version = "1", features = ["derive"], default-features = false }
 wasmql-macros = { path = "wasmql-macros" }
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+thiserror = { version = "1", default-features = false }

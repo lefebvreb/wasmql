@@ -1,9 +1,21 @@
-use alloc::vec::Vec;
-use serde::{Deserialize, Serialize};
 use postcard::Result;
+use serde::{Deserialize, Serialize};
+use thiserror::Error;
 
-pub trait CodecExt {
-    fn handle(bytes: &[u8]) -> Vec<u8>;
+#[derive(Clone, Eq, PartialEq, Debug, Error)]
+pub enum Error<E> {
+    #[error("codec error: {0}")]
+    Postcard(postcard::Error),
+    #[error("missing discriminant")]
+    MissingDiscriminant,
+    #[error("handler error: {0}")]
+    Handler(E),
+}
+
+impl<E> From<postcard::Error> for Error<E> {
+    fn from(err: postcard::Error) -> Self {
+        Self::Postcard(err)
+    }
 }
 
 pub fn decode<'a, T: Deserialize<'a>>(bytes: &'a [u8]) -> Result<T> {

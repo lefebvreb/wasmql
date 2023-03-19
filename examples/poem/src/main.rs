@@ -13,13 +13,11 @@ pub async fn main() -> Result<()> {
 
     let app = Route::new()
         .at("/wasmql", post(wasmql))
-        .nest("/", StaticFilesEndpoint::new("dist")
-            .index_file("index.html"));
+        .nest("/", StaticFilesEndpoint::new("dist").index_file("index.html"));
 
     println!("Server started at http://127.0.0.1:8080");
 
-    Server::new(listener)
-        .run(app).await?;
+    Server::new(listener).run(app).await?;
 
     Ok(())
 }

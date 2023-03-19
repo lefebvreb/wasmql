@@ -1,7 +1,7 @@
 use proc_macro::TokenStream;
 use quote::{quote, format_ident};
 use syn::punctuated::Punctuated;
-use syn::token::Paren;
+use syn::token::{Paren, Comma};
 use syn::{parse_macro_input, Item, ItemTrait, TraitItem, Visibility, FnArg, Receiver, PatType, TypeTuple, Index};
 
 macro_rules! error {
@@ -40,9 +40,9 @@ macro_rules! error {
 /// ```
 #[proc_macro_attribute]
 pub fn api(_attr: TokenStream, input: TokenStream) -> TokenStream {
-    let input = parse_macro_input!(input as ItemTrait);
+    let mut input: ItemTrait = parse_macro_input!(input);
 
-    let name = &input.ident;
+    let trait_ident = &input.ident;
 
     if !matches!(input.vis, Visibility::Public(_)) {
         error!(input.vis, "the trait must be public");
@@ -54,8 +54,14 @@ pub fn api(_attr: TokenStream, input: TokenStream) -> TokenStream {
     // Arms of the match expression in the backend dispatcher. 
     let mut dispatcher_arms = vec![];
 
+    if input.items.len() > u16::MAX as usize {
+        error!(input, "the trait may not have more than u16::MAX items");
+    }
+
     // For each item in this trait.
     for (i, item) in input.items.iter().enumerate() {
+        let i = i as u16;
+
         // Is a method.
         let TraitItem::Fn(fun) = item else {
             error!(item, "the trait must only contain methods");
@@ -72,11 +78,11 @@ pub fn api(_attr: TokenStream, input: TokenStream) -> TokenStream {
         }
 
         let sig = &fun.sig;
-        let ident = &sig.ident;
+        let fn_ident = &sig.ident;
 
         // Name does not begin with "__".
-        if ident.to_string().starts_with("__") {
-            error!(ident.clone(), "the method identifier must not begin with a double underscore");
+        if fn_ident.to_string().starts_with("__") {
+            error!(fn_ident.clone(), "the method identifier must not begin with a double underscore");
         }
 
         let mut inputs = sig.inputs.iter();
@@ -109,9 +115,25 @@ pub fn api(_attr: TokenStream, input: TokenStream) -> TokenStream {
             tuple.elems.push(*ty.clone());
         }
 
+        if !tuple.elems.empty_or_trailing() {
+            tuple.elems.push_punct(Comma::default());
+        }
+
+        let indexes = (0..tuple.elems.len()).map(Index::from);
+    
+        // Arm of the match expression in the dispatcher function.
+        dispatcher_arms.push(quote! {
+            #i => {
+                let tuple = ::wasmql::backend::decode::<#tuple>(bytes)?;
+                let value = self.#fn_ident(#(t.#indexes),*);
+                let bytes = ::wasmql::backend::encode(&value)?;
+                Ok(bytes)
+            }
+        });
+
         // Names of the decoder and encoder funcs.
-        let decoder = format_ident!("dec_{}", ident);
-        let encoder = format_ident!("enc_{}", ident);
+        let decoder = format_ident!("dec_{}", fn_ident);
+        let encoder = format_ident!("enc_{}", fn_ident);
 
         extern_funcs.push(quote! {
             #[no_mangle]
@@ -121,25 +143,31 @@ pub fn api(_attr: TokenStream, input: TokenStream) -> TokenStream {
 
             #[no_mangle]
             fn #encoder(val: ::wasmql::frontend::JsValue) -> ::wasmql::frontend::JsValue {
-                ::wasmql::frontend::encode::<#tuple>(val)
-            }
-        });
-
-        let indexes = (0..tuple.elems.len()).map(Index::from);
-
-        dispatcher_arms.push(quote! {
-            #i => {
-                let tuple = ::wasmql::backend::decode::<#tuple>(bytes)?;
-                let value = self.#ident(#(tuple.#indexes),*);
-                ::wasmql::backend::encode(&value)
+                ::wasmql::frontend::encode::<#tuple>(val, #i)
             }
         });
     }
 
+    // Append the dispatch
+    input.items.push({
+        let tokens = quote! {
+            fn __dispatch(self, bytes: &[u8]) -> ::wasmql::prelude::Vec<u8> {
+                let discriminant
+
+                match bytes.last().unwrap() as usize {
+                    #(#dispatcher_arms)*
+                    _ => unreachable!()
+                }.unwrap()
+            }
+        }.into();
+
+        parse_macro_input!(tokens)
+    });
+
     let tokens = quote! {
         #[cfg(target_arch = "wasm32")]
         #[allow(non_snake_case)]
-        mod #name {
+        mod #trait_ident {
             use super::*;
 
             #(#extern_funcs)*
