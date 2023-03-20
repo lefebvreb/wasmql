@@ -86,7 +86,7 @@ impl Serializer for JsSerializer {
     }
 
     fn serialize_f64(self, v: f64) -> JsResult<JsValue> {
-        Ok(ffi::from_number(v as f64))
+        Ok(ffi::from_number(v))
     }
 
     fn serialize_char(self, v: char) -> JsResult<JsValue> {

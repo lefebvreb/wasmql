@@ -2,10 +2,12 @@ use core::panic::PanicInfo;
 
 use alloc::string::ToString;
 
-use super::ffi;
+use super::{ffi, JsValue};
 
 #[panic_handler]
-fn panic_handler(_info: &PanicInfo) -> ! {
-    let val = ffi::from_string("wasmql codec panic");
-    ffi::throw(val);
+fn panic_handler(info: &PanicInfo) -> ! {
+    match info.payload().downcast_ref::<&str>() {
+        Some(s) => JsValue::from_string(s),
+        _ => JsValue::undefined(),
+    }.throw()
 }

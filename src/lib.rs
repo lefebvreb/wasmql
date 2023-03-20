@@ -1,10 +1,10 @@
-//! WasmQL
+#![allow(unused)] // todo: remove this
 
 #![feature(doc_cfg)]
 #![cfg_attr(target_arch = "wasm32", no_std)]
 #![cfg_attr(doc_cfg, feature(doc_cfg))]
+//! WasmQL
 
-#![allow(unused)] // todo: remove this
 
 extern crate alloc;
 
@@ -31,12 +31,12 @@ pub mod prelude {
     pub use alloc::vec::Vec;
 }
 
-#[cfg(not(target_arch = "wasm32"))]
 #[cfg_attr(doc_cfg, doc(cfg(non(target_arch = "wasm32"))))]
+#[cfg(not(target_arch = "wasm32"))]
 pub mod error {
     //! Error handling for the backend-side.
     //! 
-    //! This module exposes the [`Error`] struct and the
+    //! This module exposes the [`enum@Error`] struct and the
     //! [`Result`] type alias. Both are used to signify errors
     //! during decoding/encoding of queries.
 
@@ -47,7 +47,6 @@ pub mod error {
     /// 
     /// See the individual variants documentations for additional
     /// information about the possible errors.
-    #[doc(cfg(not(target_arch = "wasm32")))]
     #[derive(Clone, Eq, PartialEq, Debug, Error)]
     pub enum Error {
         /// Error during decoding/encoding of the raw bytes
@@ -62,7 +61,6 @@ pub mod error {
         DispatchError,
     }
 
-    #[doc(cfg(not(target_arch = "wasm32")))]
     impl From<postcard::Error> for Error {
         fn from(err: postcard::Error) -> Self {
             Self::Postcard(err)
@@ -70,7 +68,7 @@ pub mod error {
     }
 
     /// Convenient alias for a standard library [`Result`](std::result::Result), with
-    /// its `E` generic set to [`Error`].
+    /// its `E` generic set to [`enum@Error`].
     pub type Result<T> = std::result::Result<T, Error>;
 }
 

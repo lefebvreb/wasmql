@@ -22,5 +22,5 @@ pub fn encode<T: Serialize + DeserializeOwned>(val: JsValue, code: u16) -> JsVal
     let val: T = de::from_js(val).unwrap();
     let mut bytes = postcard::to_allocvec(&val).unwrap();
     bytes.extend(&code.to_le_bytes());
-    ffi::from_bytes(&bytes)
+    JsValue::from_bytes(&bytes)
 }
