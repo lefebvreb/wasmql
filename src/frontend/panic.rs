@@ -10,7 +10,7 @@ use super::{ffi, JsValue};
 pub enum Throw {}
 
 /// A result that can be passed back to js.
-pub type ThrowOr<T> = Result<T, Throw>;
+pub type Result<T> = core::result::Result<T, Throw>;
 
 impl fmt::Debug for Throw {
     fn fmt(&self, _f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -41,7 +41,6 @@ impl From<postcard::Error> for Throw {
         panic!("postcard error")
     }
 }
-
 
 #[panic_handler]
 fn panic_handler(info: &PanicInfo) -> ! {

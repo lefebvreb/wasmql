@@ -10,7 +10,7 @@ use core::slice;
 use serde::de::DeserializeOwned;
 use serde::Serialize;
 
-pub use self::js::JsValue;
+use self::ffi::JsValue;
 
 pub unsafe fn decode<T: Serialize + DeserializeOwned>(ptr: *mut u8, len: usize) -> JsValue {
     let bytes = slice::from_raw_parts(ptr, len);

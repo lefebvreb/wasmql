@@ -3,8 +3,6 @@
 use alloc::string::String;
 use alloc::vec::Vec;
 
-use super::js::JsValue;
-
 mod exports {
     use core::alloc::Layout;
 
@@ -74,6 +72,11 @@ mod imports {
         pub fn throw(val: JsValue);
     }
 }
+
+/// The index of a js-owned value, stored in a js-side array.
+#[derive(Copy, Clone)]
+#[repr(transparent)]
+pub struct JsValue(pub(crate) u32);
 
 impl JsValue {
     pub const fn from_bool(v: bool) -> Self {

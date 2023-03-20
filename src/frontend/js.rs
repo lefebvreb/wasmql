@@ -7,8 +7,3 @@ use alloc::string::ToString;
 use serde::{ser, de};
 
 use super::ffi;
-
-/// The index of a js-owned value, stored in a js-side array.
-#[derive(Copy, Clone)]
-#[repr(transparent)]
-pub struct JsValue(pub(crate) u32);
