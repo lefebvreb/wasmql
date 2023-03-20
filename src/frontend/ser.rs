@@ -46,65 +46,65 @@ impl Serializer for JsSerializer {
     type SerializeStructVariant = JsStructVariantSerializer;
 
     fn serialize_bool(self, v: bool) -> JsResult<JsValue> {
-        Ok(ffi::from_boolean(v))
+        Ok(JsValue::from_bool(v))
     }
 
     fn serialize_i8(self, v: i8) -> JsResult<JsValue> {
-        Ok(ffi::from_number(v as f64))
+        Ok(JsValue::from_number(v as f64))
     }
 
     fn serialize_i16(self, v: i16) -> JsResult<JsValue> {
-        Ok(ffi::from_number(v as f64))
+        Ok(JsValue::from_number(v as f64))
     }
 
     fn serialize_i32(self, v: i32) -> JsResult<JsValue> {
-        Ok(ffi::from_number(v as f64))
+        Ok(JsValue::from_number(v as f64))
     }
 
     fn serialize_i64(self, v: i64) -> JsResult<JsValue> {
-        Ok(ffi::from_number(v as f64))
+        Ok(JsValue::from_number(v as f64))
     }
 
     fn serialize_u8(self, v: u8) -> JsResult<JsValue> {
-        Ok(ffi::from_number(v as f64))
+        Ok(JsValue::from_number(v as f64))
     }
 
     fn serialize_u16(self, v: u16) -> JsResult<JsValue> {
-        Ok(ffi::from_number(v as f64))
+        Ok(JsValue::from_number(v as f64))
     }
 
     fn serialize_u32(self, v: u32) -> JsResult<JsValue> {
-        Ok(ffi::from_number(v as f64))
+        Ok(JsValue::from_number(v as f64))
     }
 
     fn serialize_u64(self, v: u64) -> JsResult<JsValue> {
-        Ok(ffi::from_number(v as f64))
+        Ok(JsValue::from_number(v as f64))
     }
 
     fn serialize_f32(self, v: f32) -> JsResult<JsValue> {
-        Ok(ffi::from_number(v as f64))
+        Ok(JsValue::from_number(v as f64))
     }
 
     fn serialize_f64(self, v: f64) -> JsResult<JsValue> {
-        Ok(ffi::from_number(v))
+        Ok(JsValue::from_number(v))
     }
 
     fn serialize_char(self, v: char) -> JsResult<JsValue> {
         let mut buffer = [0; size_of::<char>()];
         let s = v.encode_utf8(&mut buffer);
-        Ok(ffi::from_string(s))
+        Ok(JsValue::from_string(s))
     }
 
     fn serialize_str(self, v: &str) -> JsResult<JsValue> {
-        Ok(ffi::from_string(v))
+        Ok(JsValue::from_string(v))
     }
 
     fn serialize_bytes(self, v: &[u8]) -> JsResult<JsValue> {
-        Ok(ffi::from_bytes(v))
+        Ok(JsValue::from_bytes(v))
     }
 
     fn serialize_none(self) -> JsResult<JsValue> {
-        Ok(ffi::null())
+        Ok(JsValue::null())
     }
 
     fn serialize_some<T: Serialize + ?Sized>(self, value: &T) -> JsResult<JsValue> {
@@ -112,7 +112,7 @@ impl Serializer for JsSerializer {
     }
 
     fn serialize_unit(self) -> JsResult<JsValue> {
-        Ok(ffi::undefined())
+        Ok(JsValue::undefined())
     }
 
     fn serialize_unit_struct(self, name: &'static str) -> JsResult<JsValue> {
@@ -125,7 +125,7 @@ impl Serializer for JsSerializer {
         _variant_index: u32,
         variant: &'static str,
     ) -> JsResult<JsValue> {
-        Ok(ffi::from_string(variant))
+        Ok(JsValue::from_string(variant))
     }
 
     fn serialize_newtype_struct<T: Serialize + ?Sized>(
@@ -143,19 +143,19 @@ impl Serializer for JsSerializer {
         variant: &'static str,
         value: &T,
     ) -> JsResult<JsValue> {
-        let obj = ffi::new_object();
-        let k = ffi::from_string(variant);
+        let obj = JsValue::new_object();
+        let k = JsValue::from_string(variant);
         let v = to_js(value)?;
-        ffi::object_append(obj, k, v);
+        obj.object_append(k, v);
         Ok(obj)
     }
 
     fn serialize_seq(self, _len: Option<usize>) -> JsResult<JsValue> {
-        Ok(ffi::new_array())
+        Ok(JsValue::new_array())
     }
 
     fn serialize_tuple(self, _len: usize) -> JsResult<JsValue> {
-        Ok(ffi::new_array())
+        Ok(JsValue::new_array())
     }
 
     fn serialize_tuple_struct(
@@ -163,7 +163,7 @@ impl Serializer for JsSerializer {
         _name: &'static str,
         _len: usize,
     ) -> JsResult<JsValue> {
-        Ok(ffi::new_array())
+        Ok(JsValue::new_array())
     }
 
     fn serialize_tuple_variant(
@@ -173,15 +173,15 @@ impl Serializer for JsSerializer {
         variant: &'static str,
         _len: usize,
     ) -> JsResult<JsTupleVariantSerializer> {
-        let obj = ffi::new_object();
-        let k = ffi::from_string(variant);
-        let arr = ffi::new_array();
-        ffi::object_append(obj, k, arr);
+        let obj = JsValue::new_object();
+        let k = JsValue::from_string(variant);
+        let arr = JsValue::new_array();
+        arr.object_append(k, arr);
         Ok(JsTupleVariantSerializer { parent: obj, child: arr })
     }
 
     fn serialize_map(self, len: Option<usize>) -> JsResult<JsMapSerializer> {
-        let object = ffi::new_object();
+        let object = JsValue::new_object();
         Ok(JsMapSerializer { obj: object, next_key: None })
     }
 
@@ -190,7 +190,7 @@ impl Serializer for JsSerializer {
         _name: &'static str,
         _len: usize,
     ) -> JsResult<JsValue> {
-        Ok(ffi::new_object())
+        Ok(JsValue::new_object())
     }
 
     fn serialize_struct_variant(
@@ -200,10 +200,10 @@ impl Serializer for JsSerializer {
         variant: &'static str,
         _len: usize,
     ) -> JsResult<JsStructVariantSerializer> {
-        let obj = ffi::new_object();
-        let k = ffi::from_string(variant);
-        let sub = ffi::new_object();
-        ffi::object_append(obj, k, sub);
+        let obj = JsValue::new_object();
+        let k = JsValue::from_string(variant);
+        let sub = JsValue::new_object();
+        obj.object_append(k, sub);
         Ok(JsStructVariantSerializer { parent: obj, child: sub })
     }
 }
@@ -215,7 +215,7 @@ impl SerializeSeq for JsValue {
 
     fn serialize_element<T: Serialize + ?Sized>(&mut self, value: &T) -> JsResult<()> {
         let v = to_js(value)?;
-        ffi::array_append(*self, v);
+        self.array_append(v);
         Ok(())
     }
 
@@ -231,7 +231,7 @@ impl SerializeTuple for JsValue {
 
     fn serialize_element<T: Serialize + ?Sized>(&mut self, value: &T) -> JsResult<()> {
         let v = to_js(value)?;
-        ffi::array_append(*self, v);
+        self.array_append(v);
         Ok(())
     }
 
@@ -247,7 +247,7 @@ impl SerializeTupleStruct for JsValue {
 
     fn serialize_field<T: Serialize + ?Sized>(&mut self, value: &T) -> JsResult<()> {
         let v = to_js(value)?;
-        ffi::array_append(*self, v);
+        self.array_append(v);
         Ok(())
     }
 
@@ -263,7 +263,7 @@ impl SerializeTupleVariant for JsTupleVariantSerializer {
 
     fn serialize_field<T: Serialize + ?Sized>(&mut self, value: &T) -> JsResult<()> {
         let v = to_js(value)?;
-        ffi::array_append(self.child, v);
+        self.child.array_append(v);
         Ok(())
     }
 
@@ -285,7 +285,7 @@ impl SerializeMap for JsMapSerializer {
     fn serialize_value<T: Serialize + ?Sized>(&mut self, value: &T) -> JsResult<()> {
         let k = self.next_key.take().unwrap();
         let v = to_js(value)?;
-        ffi::object_append(self.obj, k, v);
+        self.obj.object_append(k, v);
         Ok(())
     }
 
@@ -304,7 +304,7 @@ impl SerializeStruct for JsValue {
         key: &'static str,
         value: &T,
     ) -> JsResult<()> {
-        let k = ffi::from_string(key);
+        let k = JsValue::from_string(key);
         let v = to_js(value);
         Ok(())
     }
@@ -324,9 +324,9 @@ impl SerializeStructVariant for JsStructVariantSerializer {
         key: &'static str,
         value: &T,
     ) -> JsResult<()> {
-        let k = ffi::from_string(key);
+        let k = JsValue::from_string(key);
         let v = to_js(value)?;
-        ffi::object_append(self.child, k, v);
+        self.child.object_append(k, v);
         Ok(())
     }
 

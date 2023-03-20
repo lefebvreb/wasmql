@@ -76,7 +76,7 @@ mod imports {
 }
 
 impl JsValue {
-    pub const fn from_boolean(v: bool) -> Self {
+    pub const fn from_bool(v: bool) -> Self {
         Self(v as u32)
     }
     
@@ -143,12 +143,12 @@ impl JsValue {
         }
     }
     
-    pub fn object_append(obj: JsValue, key: JsValue, val: JsValue) {
-        unsafe { imports::object_append(obj, key, val) }
+    pub fn object_append(self, key: JsValue, val: JsValue) {
+        unsafe { imports::object_append(self, key, val) }
     }
     
-    pub fn array_append(obj: JsValue, val: JsValue) {
-        unsafe { imports::array_append(obj, val) }
+    pub fn array_append(self, val: JsValue) {
+        unsafe { imports::array_append(self, val) }
     }
 
     pub fn throw(self) -> ! {
