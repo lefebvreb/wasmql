@@ -1,10 +1,15 @@
 //! Deserializing from js value to rust type.
 
-use serde::de::{Visitor, DeserializeOwned};
+use serde::de::{Visitor, DeserializeOwned, SeqAccess};
 use serde::Deserializer;
 
 use super::ffi;
 use super::js::{JsValue, JsResult};
+
+struct JsSeqDeserializer {
+    arr: JsValue,
+    index: usize,
+}
 
 impl<'de> Deserializer<'de> for &'de mut JsValue {
     type Error = JsValue;
@@ -106,6 +111,10 @@ impl<'de> Deserializer<'de> for &'de mut JsValue {
     }
 
     fn deserialize_seq<V: Visitor<'de>>(self, visitor: V) -> JsResult<V::Value> {
+        // visitor.visit_seq(JsSeqDeserializer {
+        //     arr: *self,
+        //     index: 0,
+        // })
         todo!()
     }
 
@@ -152,6 +161,16 @@ impl<'de> Deserializer<'de> for &'de mut JsValue {
         todo!()
     }
 }
+
+// impl SeqAccess<'a> for JsSeqDeserializer {
+//     type Error;
+
+//     fn next_element_seed<T: DeserializeSeed<'a>>(&mut self, _seed: T) -> Result<Option<T::Value>, Self::Error>
+//     where
+//         T: serde::de::DeserializeSeed<'de> {
+//         todo!()
+//     }
+// }
 
 pub fn from_js<T: DeserializeOwned>(mut val: JsValue) -> JsResult<T> {
     T::deserialize(&mut val)
