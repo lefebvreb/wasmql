@@ -167,7 +167,7 @@ impl<'de> Deserializer<'de> for JsValue {
     }
 
     fn deserialize_identifier<V: Visitor<'de>>(self, visitor: V) -> Result<V::Value> {
-        todo!()
+        self.deserialize_str(visitor)
     }
 
     fn deserialize_ignored_any<V: Visitor<'de>>(self, visitor: V) -> Result<V::Value> {
