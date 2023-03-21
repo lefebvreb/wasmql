@@ -5,7 +5,7 @@ use alloc::fmt;
 use alloc::string::ToString;
 use serde::{ser, de};
 
-use super::{ffi, JsValue};
+use super::{js, JsValue};
 
 pub enum Throw {}
 

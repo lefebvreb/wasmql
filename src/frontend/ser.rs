@@ -6,7 +6,7 @@ use core::mem::size_of;
 use serde::{Serializer, Serialize};
 use serde::ser::{SerializeSeq, SerializeTuple, SerializeTupleStruct, SerializeTupleVariant, SerializeMap, SerializeStruct, SerializeStructVariant};
 
-use super::ffi::{self, JsValue};
+use super::js::{self, JsValue};
 use super::panic::{Throw, Result};
 
 struct JsSerializer;

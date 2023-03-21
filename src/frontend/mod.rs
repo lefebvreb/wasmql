@@ -1,6 +1,5 @@
 mod alloc;
 mod de;
-mod ffi;
 mod js;
 mod panic;
 mod ser;
@@ -10,7 +9,7 @@ use core::slice;
 use serde::de::DeserializeOwned;
 use serde::Serialize;
 
-use self::ffi::JsValue;
+use self::js::JsValue;
 
 pub unsafe fn decode<T: Serialize + DeserializeOwned>(ptr: *mut u8, len: usize) -> JsValue {
     let bytes = slice::from_raw_parts(ptr, len);
