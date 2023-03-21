@@ -11,17 +11,17 @@ use super::panic::{Throw, Result};
 
 struct JsSerializer;
 
-struct JsTupleVariantSerializer {
+struct Tuple {
     parent: JsValue,
     child: JsValue,
 }
 
-struct JsMapSerializer {
+struct Map {
     obj: JsValue,
     next_key: Option<JsValue>,
 }
 
-struct JsStructVariantSerializer {
+struct StructVariant {
     parent: JsValue,
     child: JsValue,
 }
@@ -37,13 +37,13 @@ impl Serializer for JsSerializer {
 
     type SerializeTupleStruct = JsValue;
 
-    type SerializeTupleVariant = JsTupleVariantSerializer;
+    type SerializeTupleVariant = Tuple;
 
-    type SerializeMap = JsMapSerializer;
+    type SerializeMap = Map;
 
     type SerializeStruct = JsValue;
 
-    type SerializeStructVariant = JsStructVariantSerializer;
+    type SerializeStructVariant = StructVariant;
 
     fn serialize_bool(self, v: bool) -> Result<JsValue> {
         Ok(JsValue::from_bool(v))
@@ -172,17 +172,17 @@ impl Serializer for JsSerializer {
         _variant_index: u32,
         variant: &'static str,
         _len: usize,
-    ) -> Result<JsTupleVariantSerializer> {
+    ) -> Result<Tuple> {
         let obj = JsValue::new_object();
         let k = JsValue::from_string(variant);
         let arr = JsValue::new_array();
         arr.object_append(k, arr);
-        Ok(JsTupleVariantSerializer { parent: obj, child: arr })
+        Ok(Tuple { parent: obj, child: arr })
     }
 
-    fn serialize_map(self, len: Option<usize>) -> Result<JsMapSerializer> {
+    fn serialize_map(self, len: Option<usize>) -> Result<Map> {
         let object = JsValue::new_object();
-        Ok(JsMapSerializer { obj: object, next_key: None })
+        Ok(Map { obj: object, next_key: None })
     }
 
     fn serialize_struct(
@@ -199,12 +199,12 @@ impl Serializer for JsSerializer {
         _variant_index: u32,
         variant: &'static str,
         _len: usize,
-    ) -> Result<JsStructVariantSerializer> {
+    ) -> Result<StructVariant> {
         let obj = JsValue::new_object();
         let k = JsValue::from_string(variant);
         let sub = JsValue::new_object();
         obj.object_append(k, sub);
-        Ok(JsStructVariantSerializer { parent: obj, child: sub })
+        Ok(StructVariant { parent: obj, child: sub })
     }
 }
 
@@ -256,7 +256,7 @@ impl SerializeTupleStruct for JsValue {
     }
 }
 
-impl SerializeTupleVariant for JsTupleVariantSerializer {
+impl SerializeTupleVariant for Tuple {
     type Ok = JsValue;
 
     type Error = Throw;
@@ -272,7 +272,7 @@ impl SerializeTupleVariant for JsTupleVariantSerializer {
     }
 }
 
-impl SerializeMap for JsMapSerializer {
+impl SerializeMap for Map {
     type Ok = JsValue;
 
     type Error = Throw;
@@ -314,7 +314,7 @@ impl SerializeStruct for JsValue {
     }
 }
 
-impl SerializeStructVariant for JsStructVariantSerializer {
+impl SerializeStructVariant for StructVariant {
     type Ok = JsValue;
 
     type Error = Throw;

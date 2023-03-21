@@ -4,7 +4,8 @@ WasmQL stands for Wasm Query Layer
 
 # TODO
 
-* Testing encoding
-* Leaner error handling wasm-side
+* Tests
 * Optimize serialization to chunk data output
-* typescript bindings
+* Typescript bindings
+* Better features (frontend, typescript-bindgen)
+* Serde i128/u128 to bigints ?
