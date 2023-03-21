@@ -1,12 +1,12 @@
+use alloc::vec::Vec;
 use serde::{Deserialize, Serialize};
-use thiserror::Error;
 
 use crate::error::{Error, Result};
 
 pub fn discriminant(bytes: &[u8]) -> Result<u16> {
     match bytes {
         &[.., lo, hi] => Ok(u16::from_le_bytes([lo, hi])),
-        _ => Err(Error::DispatchError),
+        _ => Err(Error::Discriminant),
     }
 }
 

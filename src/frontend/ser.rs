@@ -1,12 +1,11 @@
 //! Serializing from rust type to js value.
 
-use core::fmt::Display;
 use core::mem::size_of;
 
 use serde::{Serializer, Serialize};
 use serde::ser::{SerializeSeq, SerializeTuple, SerializeTupleStruct, SerializeTupleVariant, SerializeMap, SerializeStruct, SerializeStructVariant};
 
-use super::js::{self, JsValue};
+use super::js::JsValue;
 use super::panic::{Throw, Result};
 
 struct JsSerializer;

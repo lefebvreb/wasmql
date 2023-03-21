@@ -3,7 +3,7 @@
 use serde::de::{Visitor, DeserializeOwned, SeqAccess, DeserializeSeed, MapAccess, EnumAccess, VariantAccess};
 use serde::Deserializer;
 
-use super::js::{self, JsValue};
+use super::js::JsValue;
 use super::panic::{Throw, Result};
 
 struct JsDeserializer(JsValue);
@@ -251,6 +251,6 @@ impl<'de> VariantAccess<'de> for Enum {
     }
 }
 
-pub fn from_js<T: DeserializeOwned>(mut val: JsValue) -> Result<T> {
+pub fn from_js<T: DeserializeOwned>(val: JsValue) -> Result<T> {
     T::deserialize(JsDeserializer(val))
 }

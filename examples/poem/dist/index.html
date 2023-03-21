@@ -6,12 +6,12 @@
         <script type="module">
             import wasmql from '/wasmql.js';
 
-            const api = await wasmql({
+            const codec = await wasmql({
                 endpoint: "/wasmql",
                 wasm: "/codec.wasm"
             });
 
-            let items = await api.items();
+            let items = await codec.items();
         </script>
     </body>
 </html>

@@ -32,8 +32,8 @@ mod exports {
 mod imports {
     use super::*;
 
-    /// All of this functions are free to throw an error
-    /// (which will pass through wasm but not be intercepted).
+    // All of these functions are free to throw an exception
+    // (which will pass through wasm but not be intercepted).
     extern "C" {
         /* boolean */
 

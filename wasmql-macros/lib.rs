@@ -165,7 +165,7 @@ pub fn api(_attr: TokenStream, input: TokenStream) -> TokenStream {
             {
                 match ::wasmql::backend::discriminant(bytes)? {
                     #(#dispatcher_arms)*
-                    _ => Err(::wasmql::error::Error::DispatchError),
+                    _ => Err(::wasmql::error::Error::Discriminant),
                 }
             }
         }.into();
@@ -174,7 +174,7 @@ pub fn api(_attr: TokenStream, input: TokenStream) -> TokenStream {
     });
 
     let tokens = quote! {
-        #[cfg(target_arch = "wasm32")]
+        #[cfg(feature = "frontend")]
         #[allow(non_snake_case)]
         mod #trait_ident {
             use super::*;
@@ -182,7 +182,7 @@ pub fn api(_attr: TokenStream, input: TokenStream) -> TokenStream {
             #(#extern_funcs)*
         }
 
-        #[cfg(not(target_arch = "wasm32"))]
+        #[cfg(not(feature = "frontend"))]
         #input
     };
 

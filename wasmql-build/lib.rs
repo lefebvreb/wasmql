@@ -45,7 +45,7 @@ pub fn export_minified_js<P: AsRef<Path>>(dest: P) -> Result<()> {
     fs::write(dest.as_ref(), MINIFIED_JS)
 }
 
-pub fn compile_wasm_codec<S: AsRef<str>, P: AsRef<Path>>(crate_name: S, dest: P) -> Result<()>  {    
+pub fn compile_wasm_codec<S: AsRef<str>, P: AsRef<Path>>(crate_name: S, dest: P) -> Result<()> {
     let crate_name = crate_name.as_ref();
 
     let target_dir = Path::new(&env::var("OUT_DIR").unwrap())
@@ -61,12 +61,13 @@ pub fn compile_wasm_codec<S: AsRef<str>, P: AsRef<Path>>(crate_name: S, dest: P)
         .arg("--crate-type").arg("cdylib")
         .arg("--target-dir").arg(&target_dir)
         .arg("--")
+        .arg("--cfg").arg("feature=\"frontend\"")
         .arg("-Copt-level=z")
         .arg("-Cpanic=abort")
         .arg("-Cstrip=symbols")
         .status()?;
 
-    let wasm_file = Path::new(&target_dir)
+    let wasm_file = target_dir
         .join("wasm32-unknown-unknown")
         .join("release")
         .join(Path::new(crate_name).with_extension("wasm"));

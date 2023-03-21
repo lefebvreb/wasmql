@@ -2,10 +2,9 @@ use core::fmt::Display;
 use core::panic::PanicInfo;
 
 use alloc::fmt;
-use alloc::string::ToString;
 use serde::{ser, de};
 
-use super::{js, JsValue};
+use super::JsValue;
 
 pub enum Throw {}
 
@@ -25,19 +24,19 @@ impl fmt::Display for Throw {
 }
 
 impl ser::Error for Throw {
-    fn custom<T: Display>(msg: T) -> Self {
+    fn custom<T: Display>(_msg: T) -> Self {
         panic!("serialization error")
     }
 }
 
 impl de::Error for Throw {
-    fn custom<T: Display>(msg: T) -> Self {
+    fn custom<T: Display>(_msg: T) -> Self {
         panic!("deserialization error")
     }
 }
 
 impl From<postcard::Error> for Throw {
-    fn from(err: postcard::Error) -> Self {
+    fn from(_err: postcard::Error) -> Self {
         panic!("postcard error")
     }
 }
