@@ -28,7 +28,7 @@ struct Enum {
 impl<'de> Deserializer<'de> for JsDeserializer {
     type Error = Throw;
 
-    fn deserialize_any<V: Visitor<'de>>(self, visitor: V) -> Result<V::Value> {
+    fn deserialize_any<V: Visitor<'de>>(self, _visitor: V) -> Result<V::Value> {
         unimplemented!()
     }
 
@@ -132,7 +132,7 @@ impl<'de> Deserializer<'de> for JsDeserializer {
         })
     }
 
-    fn deserialize_tuple<V: Visitor<'de>>(self, len: usize, visitor: V) -> Result<V::Value> {
+    fn deserialize_tuple<V: Visitor<'de>>(self, _len: usize, visitor: V) -> Result<V::Value> {
         self.deserialize_seq(visitor)
     }
 
@@ -176,7 +176,7 @@ impl<'de> Deserializer<'de> for JsDeserializer {
         self.deserialize_str(visitor)
     }
 
-    fn deserialize_ignored_any<V: Visitor<'de>>(self, visitor: V) -> Result<V::Value> {
+    fn deserialize_ignored_any<V: Visitor<'de>>(self, _visitor: V) -> Result<V::Value> {
         unimplemented!()
     }
 }

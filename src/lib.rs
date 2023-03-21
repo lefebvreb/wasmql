@@ -1,16 +1,15 @@
 #![no_std]
-#![cfg_attr(doc_cfg, feature(doc_cfg))]
 
 //! WasmQL
 
 extern crate alloc;
 
 #[doc(hidden)]
-#[cfg(feature = "frontend")]
+#[cfg(wasmql_frontend)]
 pub mod frontend;
 
 #[doc(hidden)]
-#[cfg(feature = "backend")]
+#[cfg(not(wasmql_frontend))]
 pub mod backend;
 
 pub mod prelude {
@@ -28,8 +27,7 @@ pub mod prelude {
     pub use alloc::vec::Vec;
 }
 
-#[cfg_attr(doc_cfg, doc(cfg(feature = "backend")))]
-#[cfg(feature = "backend")]
+#[cfg(not(wasmql_frontend))]
 pub mod error {
     //! Error handling for the backend-side.
     //! 

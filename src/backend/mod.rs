@@ -10,7 +10,7 @@ pub fn discriminant(bytes: &[u8]) -> Result<u16> {
     }
 }
 
-pub fn decode<'a, T: Deserialize<'a>>(bytes: &'a [u8]) -> Result<T> {
+pub fn decode<'de, T: Deserialize<'de>>(bytes: &'de [u8]) -> Result<T> {
     Ok(postcard::from_bytes(bytes)?)
 }
 
