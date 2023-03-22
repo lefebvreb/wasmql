@@ -174,7 +174,7 @@ pub fn api(_attr: TokenStream, input: TokenStream) -> TokenStream {
     });
 
     let tokens = quote! {
-        #[cfg(feature = "frontend")]
+        #[cfg(wasmql_frontend)]
         #[allow(non_snake_case)]
         mod #trait_ident {
             use super::*;
@@ -182,7 +182,7 @@ pub fn api(_attr: TokenStream, input: TokenStream) -> TokenStream {
             #(#extern_funcs)*
         }
 
-        #[cfg(not(feature = "frontend"))]
+        #[cfg(not(wasmql_frontend))]
         #input
     };
 

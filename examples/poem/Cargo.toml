@@ -7,9 +7,9 @@ edition = "2021"
 members = ["codec"]
 
 [dependencies]
-poem = { version = "1", features = ["static-files"] }
-tokio = { version = "1", features = ["rt-multi-thread"] }
-wasmql = { path = "../.." }
+#poem = { version = "1", features = ["static-files"] }
+#tokio = { version = "1", features = ["rt-multi-thread"] }
+#wasmql = { path = "../.." }
 
 [build-dependencies]
 wasmql-build = { path = "../../wasmql-build" }

@@ -5,11 +5,11 @@
 extern crate alloc;
 
 #[doc(hidden)]
-#[cfg(wasmql_frontend)]
+#[cfg(feature = "frontend")]
 pub mod frontend;
 
 #[doc(hidden)]
-#[cfg(not(wasmql_frontend))]
+#[cfg(feature = "backend")]
 pub mod backend;
 
 pub mod prelude {
@@ -27,7 +27,7 @@ pub mod prelude {
     pub use alloc::vec::Vec;
 }
 
-#[cfg(not(wasmql_frontend))]
+#[cfg(feature = "backend")]
 pub mod error {
     //! Error handling for the backend-side.
     //! 
