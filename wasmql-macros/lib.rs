@@ -31,7 +31,7 @@ macro_rules! error {
 /// #[wasmql::data]
 /// pub struct Session(String);
 /// 
-/// #[wasmql::api]
+/// #[wasmql::codec]
 /// pub trait MyApi {
 ///     fn login(self, login: Login) -> Session;
 /// 
@@ -39,7 +39,7 @@ macro_rules! error {
 /// }
 /// ```
 #[proc_macro_attribute]
-pub fn api(_attr: TokenStream, input: TokenStream) -> TokenStream {
+pub fn codec(_attr: TokenStream, input: TokenStream) -> TokenStream {
     let mut input: ItemTrait = parse_macro_input!(input);
 
     let trait_ident = &input.ident;
@@ -174,7 +174,7 @@ pub fn api(_attr: TokenStream, input: TokenStream) -> TokenStream {
     });
 
     let tokens = quote! {
-        #[cfg(wasmql_frontend)]
+        #[cfg(all(target_arch = "wasm32", not(feature = "backend")))]
         #[allow(non_snake_case)]
         mod #trait_ident {
             use super::*;
@@ -182,7 +182,7 @@ pub fn api(_attr: TokenStream, input: TokenStream) -> TokenStream {
             #(#extern_funcs)*
         }
 
-        #[cfg(not(wasmql_frontend))]
+        #[cfg(any(not(target_arch = "wasm32"), feature = "backend"))]
         #input
     };
 

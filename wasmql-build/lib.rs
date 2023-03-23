@@ -42,11 +42,17 @@ use std::str;
 pub const MINIFIED_JS: &str = include_str!(concat!(env!("OUT_DIR"), "/wasmql.min.js"));
 
 pub fn export_minified_js<P: AsRef<Path>>(dest: P) -> Result<()> {
-    fs::write(dest.as_ref(), MINIFIED_JS)
+    let dest = dest.as_ref();
+    println!("cargo:rerun-if-changed={}", dest.display());
+    fs::write(dest, MINIFIED_JS)
 }
 
-pub fn compile_wasm_codec<S: AsRef<str>, P: AsRef<Path>>(crate_name: S, dest: P) -> Result<()> {
-    let crate_name = crate_name.as_ref();
+pub fn compile_wasm_codec<P1: AsRef<Path>, P2: AsRef<Path>>(crate_path: P1, dest: P2) -> Result<()> {
+    let crate_path = crate_path.as_ref();
+    let dest = dest.as_ref();
+
+    println!("cargo:rerun-if-changed={}", crate_path.display());
+    println!("cargo:rerun-if-changed={}", dest.display());
 
     let target_dir = Path::new(&env::var("OUT_DIR").unwrap())
         .join("target");
@@ -54,10 +60,10 @@ pub fn compile_wasm_codec<S: AsRef<str>, P: AsRef<Path>>(crate_name: S, dest: P)
     fs::create_dir_all(&target_dir)?;
 
     Command::new("cargo")
-        .arg("rustc").arg("-v")
+        .current_dir(crate_path)
+        .arg("rustc")
         .arg("--color").arg("always")
         .arg("--release")
-        .arg("--package").arg(crate_name)
         .arg("--target-dir").arg(&target_dir)
         .arg("--target").arg("wasm32-unknown-unknown")
         .arg("--config").arg("profile.release.lto='thin'")
@@ -69,9 +75,9 @@ pub fn compile_wasm_codec<S: AsRef<str>, P: AsRef<Path>>(crate_name: S, dest: P)
     let wasm_file = target_dir
         .join("wasm32-unknown-unknown")
         .join("release")
-        .join(Path::new(crate_name).with_extension("wasm"));
+        .join(crate_path.with_extension("wasm"));
 
-    fs::copy(wasm_file, dest.as_ref())?;
+    fs::copy(wasm_file, dest)?;
 
     Ok(())
 }

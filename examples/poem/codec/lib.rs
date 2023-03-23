@@ -16,9 +16,9 @@ pub struct CreateItem {
     desc: String,
 }
 
-#[wasmql::api]
+#[wasmql::codec]
 pub trait TodoApi {
-    fn items(self) -> Vec<Item>;
+    fn items(self) -> Vec<Item>; 
 
     fn create_item(self, name: String, data: String) -> Item;
 
