@@ -4,11 +4,11 @@
     </head>
     <body>
         <script type="module">
-            import wasmql from '/wasmql.js';
+            import wasmql from '/wasmql.min.js';
 
             const codec = await wasmql({
-                endpoint: "/wasmql",
-                wasm: "/codec.wasm"
+                endpoint: '/wasmql',
+                wasm: fetch('/codec.wasm'),
             });
 
             let items = await codec.items();

@@ -6,7 +6,7 @@ export default async function ({ endpoint, wasm }) {
     let table = [false, true, null, undefined];
 
     // Appends a new value to the table, returning it's idx.
-    function value(val) {
+    function make_value(val) {
         return table.push(val) - 1;
     }
 
@@ -30,20 +30,20 @@ export default async function ({ endpoint, wasm }) {
 
     // Imports given to the wasm module instance.
     let imports = {
-        number: (num) => value(num),
+        number: (num) => make_value(num),
         string: (ptr, len) => {
             let view = new Uint8Array(memory, ptr, len);
-            return value(text_decoder.decode(view));
+            return make_value(text_decoder.decode(view));
         },
         bytes: (ptr, len) => {
             let view = new Uint8Array(memory, ptr, len);
-            return value(view.buffer);
+            return make_value(view.buffer);
         },
-        object: () => value({}),
+        object: () => make_value({}),
         object_append: (obj, key, val) => {
             table[obj][key] = val;
         },
-        array: () => value([]),
+        array: () => make_value([]),
         array_append: (obj, val) => {
             table[obj].push(val);
         },
@@ -55,7 +55,7 @@ export default async function ({ endpoint, wasm }) {
     };
     
     // Instantiate wasm module.
-    let module = await WebAssembly.instantiateStreaming(fetch(wasm), { env: imports });
+    let module = await WebAssembly.instantiateStreaming(wasm, { env: imports });
     exports = module.instance.exports;
     memory = exports.memory.buffer;
 
@@ -65,7 +65,7 @@ export default async function ({ endpoint, wasm }) {
     // Makes a request with the given object, encoder and decoder functions.
     async function query(args, enc_fn, dec_fn) {
         // Turn args into a value.
-        let val = value(args);
+        let val = make_value(args);
         // Encode value into bytes, and reset module.
         let body = table[enc_fn(val)];
         reset();
@@ -82,7 +82,7 @@ export default async function ({ endpoint, wasm }) {
     };
 
     // For each exported function.
-    for (const [enc_fn_name, enc_fn] of Object.entries(exports)) {
+    for (let [enc_fn_name, enc_fn] of Object.entries(exports)) {
         // If the function name starts with 'enc_', i.e. it is an encoding function.
         if (enc_fn_name.startsWith('enc_')) {
             // Name of the original function.
