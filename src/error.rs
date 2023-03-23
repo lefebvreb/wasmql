@@ -1,5 +1,5 @@
 //! Error handling for the backend-side.
-//! 
+//!
 //! This module exposes the [`enum@Error`] struct and the
 //! [`Result`] type alias. Both are used to signify errors
 //! during decoding/encoding of queries.
@@ -8,7 +8,7 @@ use core::fmt;
 
 /// An error that may occur during dipatching of a query
 /// to a codec handler.
-/// 
+///
 /// See the individual variants documentations for additional
 /// information about the possible errors.
 #[derive(Clone, Eq, PartialEq, Debug)]

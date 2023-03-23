@@ -1,40 +1,45 @@
 use proc_macro::TokenStream;
-use quote::{quote, format_ident};
+use quote::{format_ident, quote};
 use syn::punctuated::Punctuated;
-use syn::token::{Paren, Comma};
-use syn::{parse_macro_input, Item, ItemTrait, TraitItem, Visibility, FnArg, Receiver, PatType, TypeTuple, Index};
+use syn::token::{Comma, Paren};
+use syn::{
+    parse_macro_input, FnArg, Index, Item, ItemTrait, PatType, Receiver, TraitItem, TypeTuple,
+    Visibility,
+};
 
 macro_rules! error {
     ($tokens: expr, $message: expr) => {
-        return syn::Error::new_spanned($tokens, $message).to_compile_error().into()
+        return syn::Error::new_spanned($tokens, $message)
+            .to_compile_error()
+            .into()
     };
 }
 
 /// Attribute for marking a rust trait as defining a WasmQL API.
-/// 
+///
 /// This attribute can be applied to a rust trait that only contains
 /// methods, whose signatures are `fn(self, T) -> U` where `T` and
 /// `U` are enums or structs marked with the `#[data]` attribute.
-/// 
+///
 /// This attribute has no effects to the underlying trait if compiled for
 /// the backend, but will drastically change it if compiled to `wasm32`.
-/// 
+///
 /// # Examples
-/// 
+///
 /// ```no_run
 /// #[wasmql::data]
 /// pub struct Login {
 ///     username: String,
 ///     password: String,
 /// }
-/// 
+///
 /// #[wasmql::data]
 /// pub struct Session(String);
-/// 
+///
 /// #[wasmql::codec]
 /// pub trait MyApi {
 ///     fn login(self, login: Login) -> Session;
-/// 
+///
 ///     fn get_resource(self, session: Session) -> String;
 /// }
 /// ```
@@ -48,10 +53,10 @@ pub fn codec(_attr: TokenStream, input: TokenStream) -> TokenStream {
         error!(input.vis, "the trait must be public");
     }
 
-    // Wasm funcs exported to js for encoding/decoding. 
+    // Wasm funcs exported to js for encoding/decoding.
     let mut extern_funcs = vec![];
 
-    // Arms of the match expression in the backend dispatcher. 
+    // Arms of the match expression in the backend dispatcher.
     let mut dispatcher_arms = vec![];
 
     if input.items.len() > u16::MAX as usize {
@@ -82,7 +87,10 @@ pub fn codec(_attr: TokenStream, input: TokenStream) -> TokenStream {
 
         // Name does not begin with "__".
         if fn_ident.to_string().starts_with("__") {
-            error!(fn_ident.clone(), "the method identifier must not begin with a double underscore");
+            error!(
+                fn_ident.clone(),
+                "the method identifier must not begin with a double underscore"
+            );
         }
 
         let mut inputs = sig.inputs.iter();
@@ -120,7 +128,7 @@ pub fn codec(_attr: TokenStream, input: TokenStream) -> TokenStream {
         if !tuple.elems.empty_or_trailing() {
             tuple.elems.push_punct(Comma::default());
         }
-    
+
         // Arm of the match expression in the dispatcher function.
         dispatcher_arms.push(quote! {
             #i => {
@@ -151,14 +159,14 @@ pub fn codec(_attr: TokenStream, input: TokenStream) -> TokenStream {
     input.items.push({
         let tokens = quote! {
             /// Dispatches a message to this codec.
-            /// 
+            ///
             /// This method is provided and does not need to be reimplemented.
-            /// 
-            /// First, this method decodes the raw `bytes` of the message. On success, 
+            ///
+            /// First, this method decodes the raw `bytes` of the message. On success,
             /// the correct handling method is called on `self` with the decoded value. Then,
             /// the result is encoded and returned as a `Vec<u8>`.
-            /// 
-            /// 
+            ///
+            ///
             fn __dispatch(self, bytes: &[u8]) -> ::wasmql::error::Result<::wasmql::prelude::Vec<u8>>
             where
                 Self: Sized,
@@ -168,7 +176,8 @@ pub fn codec(_attr: TokenStream, input: TokenStream) -> TokenStream {
                     _ => Err(::wasmql::error::Error::Discriminant),
                 }
             }
-        }.into();
+        }
+        .into();
 
         parse_macro_input!(tokens)
     });
@@ -190,25 +199,25 @@ pub fn codec(_attr: TokenStream, input: TokenStream) -> TokenStream {
 }
 
 /// Attribute for marking a rust type as a WasmQL data-transfer object.
-/// 
+///
 /// This attribute can be applied to an enum or struct definition.
-/// It is simply an alias for deriving [`serde`](https://docs.rs/serde/latest/serde/)'s 
+/// It is simply an alias for deriving [`serde`](https://docs.rs/serde/latest/serde/)'s
 /// [`Serialize`](https://docs.rs/serde/latest/serde/trait.Serialize.html) and [`Deserialize`](https://docs.rs/serde/latest/serde/trait.Deserialize.html) traits,
 /// without the need to add `serde` as an explicit dependency and importing the relevant
 /// derive macros in scope.
-/// 
+///
 /// A type marked as `data` can then be used as input or output for an API method, this is why
 /// this type must be public.
-/// 
+///
 /// # Examples
-/// 
+///
 /// ```no_run
 /// #[wasmql::data]
 /// pub struct Person {
 ///     name: String,
 ///     age: i64,
 /// }
-/// 
+///
 /// #[wasmql::data]
 /// pub enum User {
 ///     Unlogged,
@@ -222,7 +231,10 @@ pub fn data(_attr: TokenStream, input: TokenStream) -> TokenStream {
     let vis = match &data {
         Item::Enum(item) => &item.vis,
         Item::Struct(item) => &item.vis,
-        _ => error!(data, "the attribute must only be used on an enum or struct definition"),
+        _ => error!(
+            data,
+            "the attribute must only be used on an enum or struct definition"
+        ),
     };
 
     if !matches!(vis, Visibility::Public(_)) {

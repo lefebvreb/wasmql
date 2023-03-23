@@ -11,9 +11,9 @@ const MIN_ADDRESS: usize = 1;
 const PAGE_SIZE: usize = 65536;
 
 /// The non thread-safe bump allocator.
-/// 
+///
 /// # Safety
-/// 
+///
 /// This allocator must only be used in single-threaded environments.
 struct BumpAllocator {
     /// Current position of the allocator, i.e. beginning of the free memory zone.
@@ -59,12 +59,14 @@ unsafe impl GlobalAlloc for BumpAllocator {
 unsafe impl Sync for BumpAllocator {}
 
 #[global_allocator]
-static GLOBAL: BumpAllocator = BumpAllocator { offset: UnsafeCell::new(MIN_ADDRESS) };
+static GLOBAL: BumpAllocator = BumpAllocator {
+    offset: UnsafeCell::new(MIN_ADDRESS),
+};
 
 /// Resets the allocator, not actually deleting anything.
-/// 
+///
 /// # Safety
-/// 
+///
 /// The caller must ensure that no allocated objects currently exist in the program.
 pub unsafe fn reset() {
     *GLOBAL.offset.get() = MIN_ADDRESS;

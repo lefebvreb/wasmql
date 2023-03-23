@@ -14,14 +14,17 @@ fn main() -> Result<()> {
 
     let mut out = Vec::new();
 
-    minify_js::minify(&Session::new(), TopLevelMode::Module, &read(JS_LIB_PATH)?, &mut out)
-        .expect("js syntax error");
+    minify_js::minify(
+        &Session::new(),
+        TopLevelMode::Module,
+        &read(JS_LIB_PATH)?,
+        &mut out,
+    )
+    .expect("js syntax error");
 
-    let out_file = Path::new(&env::var("OUT_DIR").unwrap())
-        .join("wasmql.min.js");
+    let out_file = Path::new(&env::var("OUT_DIR").unwrap()).join("wasmql.min.js");
 
-    File::create(out_file)?
-        .write_all(&out)?;
+    File::create(out_file)?.write_all(&out)?;
 
     Ok(())
 }

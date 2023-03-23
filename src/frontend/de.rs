@@ -1,10 +1,12 @@
 //! Deserializing from js value to rust type.
 
-use serde::de::{Visitor, DeserializeOwned, SeqAccess, DeserializeSeed, MapAccess, EnumAccess, VariantAccess};
+use serde::de::{
+    DeserializeOwned, DeserializeSeed, EnumAccess, MapAccess, SeqAccess, VariantAccess, Visitor,
+};
 use serde::Deserializer;
 
 use super::js::JsValue;
-use super::panic::{Throw, Result};
+use super::panic::{Result, Throw};
 
 struct JsDeserializer(JsValue);
 
@@ -22,7 +24,8 @@ struct Map {
 }
 
 struct Enum {
-
+    key: JsValue,
+    val: JsValue,
 }
 
 impl<'de> Deserializer<'de> for JsDeserializer {
@@ -73,7 +76,7 @@ impl<'de> Deserializer<'de> for JsDeserializer {
     }
 
     fn deserialize_f64<V: Visitor<'de>>(self, visitor: V) -> Result<V::Value> {
-        visitor.visit_f64(self.0.as_number() as f64)
+        visitor.visit_f64(self.0.as_number())
     }
 
     fn deserialize_char<V: Visitor<'de>>(self, visitor: V) -> Result<V::Value> {
@@ -147,7 +150,7 @@ impl<'de> Deserializer<'de> for JsDeserializer {
 
     fn deserialize_map<V: Visitor<'de>>(self, visitor: V) -> Result<V::Value> {
         visitor.visit_map(Map {
-            iter: self.0,
+            iter: self.0.new_iter(),
             len: self.0.array_len(),
             key_idx: 0,
             val_idx: 0,
@@ -165,11 +168,15 @@ impl<'de> Deserializer<'de> for JsDeserializer {
 
     fn deserialize_enum<V: Visitor<'de>>(
         self,
-        name: &'static str,
-        variants: &'static [&'static str],
+        _name: &'static str,
+        _variants: &'static [&'static str],
         visitor: V,
     ) -> Result<V::Value> {
-        todo!()
+        let iter = self.0.new_iter();
+        visitor.visit_enum(Enum {
+            key: iter.iter_key(0),
+            val: iter.iter_val(0),
+        })
     }
 
     fn deserialize_identifier<V: Visitor<'de>>(self, visitor: V) -> Result<V::Value> {
@@ -218,36 +225,35 @@ impl<'de> MapAccess<'de> for Map {
 impl<'de> EnumAccess<'de> for Enum {
     type Error = Throw;
 
-    type Variant = Self;
+    type Variant = JsDeserializer;
 
-    fn variant_seed<V: DeserializeSeed<'de>>(self, seed: V) -> Result<(V::Value, Self::Variant)>
-    where
-        V: DeserializeSeed<'de> {
-        todo!()
+    fn variant_seed<V: DeserializeSeed<'de>>(self, seed: V) -> Result<(V::Value, Self::Variant)> {
+        let key = seed.deserialize(JsDeserializer(self.key))?;
+        Ok((key, JsDeserializer(self.val)))
     }
 }
 
-impl<'de> VariantAccess<'de> for Enum {
+impl<'de> VariantAccess<'de> for JsDeserializer {
     type Error = Throw;
 
     fn unit_variant(self) -> Result<()> {
-        todo!()
+        Ok(())
     }
 
     fn newtype_variant_seed<T: DeserializeSeed<'de>>(self, seed: T) -> Result<T::Value> {
-        todo!()
+        seed.deserialize(self)
     }
 
-    fn tuple_variant<V: Visitor<'de>>(self, len: usize, visitor: V) -> Result<V::Value> {
-        todo!()
+    fn tuple_variant<V: Visitor<'de>>(self, _len: usize, visitor: V) -> Result<V::Value> {
+        self.deserialize_seq(visitor)
     }
 
     fn struct_variant<V: Visitor<'de>>(
         self,
-        fields: &'static [&'static str],
+        _fields: &'static [&'static str],
         visitor: V,
     ) -> Result<V::Value> {
-        todo!()
+        self.deserialize_map(visitor)
     }
 }
 

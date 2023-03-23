@@ -2,11 +2,14 @@
 
 use core::mem::size_of;
 
-use serde::{Serializer, Serialize};
-use serde::ser::{SerializeSeq, SerializeTuple, SerializeTupleStruct, SerializeTupleVariant, SerializeMap, SerializeStruct, SerializeStructVariant};
+use serde::ser::{
+    SerializeMap, SerializeSeq, SerializeStruct, SerializeStructVariant, SerializeTuple,
+    SerializeTupleStruct, SerializeTupleVariant,
+};
+use serde::{Serialize, Serializer};
 
 use super::js::JsValue;
-use super::panic::{Throw, Result};
+use super::panic::{Result, Throw};
 
 struct JsSerializer;
 
@@ -157,11 +160,7 @@ impl Serializer for JsSerializer {
         Ok(JsValue::new_array())
     }
 
-    fn serialize_tuple_struct(
-        self,
-        _name: &'static str,
-        _len: usize,
-    ) -> Result<JsValue> {
+    fn serialize_tuple_struct(self, _name: &'static str, _len: usize) -> Result<JsValue> {
         Ok(JsValue::new_array())
     }
 
@@ -176,19 +175,21 @@ impl Serializer for JsSerializer {
         let k = JsValue::from_string(variant);
         let arr = JsValue::new_array();
         arr.object_append(k, arr);
-        Ok(Tuple { parent: obj, child: arr })
+        Ok(Tuple {
+            parent: obj,
+            child: arr,
+        })
     }
 
-    fn serialize_map(self, len: Option<usize>) -> Result<Map> {
+    fn serialize_map(self, _len: Option<usize>) -> Result<Map> {
         let object = JsValue::new_object();
-        Ok(Map { obj: object, next_key: None })
+        Ok(Map {
+            obj: object,
+            next_key: None,
+        })
     }
 
-    fn serialize_struct(
-        self,
-        _name: &'static str,
-        _len: usize,
-    ) -> Result<JsValue> {
+    fn serialize_struct(self, _name: &'static str, _len: usize) -> Result<JsValue> {
         Ok(JsValue::new_object())
     }
 
@@ -203,7 +204,10 @@ impl Serializer for JsSerializer {
         let k = JsValue::from_string(variant);
         let sub = JsValue::new_object();
         obj.object_append(k, sub);
-        Ok(StructVariant { parent: obj, child: sub })
+        Ok(StructVariant {
+            parent: obj,
+            child: sub,
+        })
     }
 }
 
@@ -304,7 +308,8 @@ impl SerializeStruct for JsValue {
         value: &T,
     ) -> Result<()> {
         let k = JsValue::from_string(key);
-        let v = to_js(value);
+        let v = to_js(value)?;
+        self.object_append(k, v);
         Ok(())
     }
 

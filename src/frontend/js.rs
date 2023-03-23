@@ -19,9 +19,9 @@ mod exports {
     }
 
     /// Resets the allocator.
-    /// 
+    ///
     /// # Safety
-    /// 
+    ///
     /// The caller must ensure that no allocated objects currently exist in the program.
     #[no_mangle]
     unsafe fn __reset() {
@@ -64,7 +64,7 @@ mod imports {
         pub fn as_char(val: JsValue) -> u32;
 
         /* bytes */
-        
+
         /// Creates a new `ArrayBuffer`.
         pub fn from_bytes(ptr: *const u8, len: usize) -> JsValue;
         /// Gets the length of a js-owned `ArrayBuffer`.
@@ -99,7 +99,7 @@ mod imports {
         pub fn iter_key(iter: JsValue, i: usize) -> JsValue;
         /// Returns the ith value of this iterator.
         pub fn iter_val(iter: JsValue, i: usize) -> JsValue;
-          
+
         /* throw */
 
         /// Throws the given js-owned value using a `throw` statement, and resets wasm memory.
@@ -118,11 +118,11 @@ impl JsValue {
     pub const fn from_bool(v: bool) -> Self {
         Self(v as u32)
     }
-    
+
     pub fn as_boolean(self) -> bool {
         unsafe { imports::as_boolean(self) }
     }
-    
+
     /* null */
 
     pub const fn null() -> Self {
@@ -134,7 +134,7 @@ impl JsValue {
     }
 
     /* undefined */
-    
+
     pub const fn undefined() -> Self {
         Self(3)
     }
@@ -144,7 +144,7 @@ impl JsValue {
     pub fn from_number(num: f64) -> Self {
         unsafe { imports::from_number(num) }
     }
-    
+
     pub fn as_number(self) -> f64 {
         unsafe { imports::as_number(self) }
     }
@@ -154,28 +154,28 @@ impl JsValue {
     pub fn from_string(str: &str) -> Self {
         unsafe { imports::from_string(str.as_ptr(), str.len()) }
     }
-    
+
     pub fn as_string(self) -> String {
-        unsafe { 
+        unsafe {
             let len = imports::string_len(self);
             let ptr = imports::as_string(self);
             String::from_raw_parts(ptr, len, len)
         }
     }
-    
+
     pub fn as_char(self) -> char {
-        unsafe { 
+        unsafe {
             let code = imports::as_char(self);
             char::from_u32_unchecked(code)
         }
     }
 
-    /* bytes */  
+    /* bytes */
 
     pub fn from_bytes(bytes: &[u8]) -> Self {
         unsafe { imports::from_bytes(bytes.as_ptr(), bytes.len()) }
     }
-    
+
     pub fn as_bytes(self) -> Vec<u8> {
         unsafe {
             let len = imports::bytes_len(self);
@@ -184,38 +184,38 @@ impl JsValue {
         }
     }
 
-    /* object */  
+    /* object */
 
     pub fn new_object() -> Self {
         unsafe { imports::new_object() }
     }
-    
+
     pub fn object_append(self, key: JsValue, val: JsValue) {
         unsafe { imports::object_append(self, key, val) }
     }
 
     /* array */
-    
+
     pub fn new_array() -> Self {
         unsafe { imports::new_array() }
     }
-    
+
     pub fn array_append(self, val: JsValue) {
         unsafe { imports::array_append(self, val) }
     }
-    
+
     pub fn array_len(self) -> usize {
         unsafe { imports::array_len(self) }
     }
-    
+
     pub fn array_get(self, i: usize) -> JsValue {
         unsafe { imports::array_get(self, i) }
     }
 
     /* iter */
 
-    pub fn new_iter(obj: JsValue) -> JsValue {
-        unsafe { imports::new_iter(obj) }
+    pub fn new_iter(self) -> JsValue {
+        unsafe { imports::new_iter(self) }
     }
 
     pub fn iter_key(self, i: usize) -> JsValue {

@@ -2,7 +2,7 @@ use core::fmt::Display;
 use core::panic::PanicInfo;
 
 use alloc::fmt;
-use serde::{ser, de};
+use serde::{de, ser};
 
 use super::JsValue;
 
@@ -46,5 +46,6 @@ fn panic_handler(info: &PanicInfo) -> ! {
     match info.payload().downcast_ref::<&str>() {
         Some(s) => JsValue::from_string(s),
         _ => JsValue::undefined(),
-    }.throw()
+    }
+    .throw()
 }
