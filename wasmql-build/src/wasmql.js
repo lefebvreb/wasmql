@@ -12,6 +12,7 @@ export default async function ({ endpoint, wasm }) {
 
     // Text decoder, to convert between utf-16 (js) and utf-8 (wasm).
     let text_decoder = new TextDecoder();
+    let text_encoder = new TextEncoder();
 
     // Copies some bytes into wasm.
     function copy(bytes) {
@@ -30,28 +31,40 @@ export default async function ({ endpoint, wasm }) {
 
     // Imports given to the wasm module instance.
     let imports = {
-        number: (num) => make_value(num),
-        string: (ptr, len) => {
+        /* boolean */
+        as_boolean: (val) => table[val],
+        /* null */
+        is_null: (val) => table[val] === null,
+        /* number */
+        from_number: (num) => make_value(num),
+        as_number: (val) => table[val],
+        /* string */
+        from_string: (ptr, len) => {
             let view = new Uint8Array(memory, ptr, len);
             return make_value(text_decoder.decode(view));
         },
-        bytes: (ptr, len) => {
-            let view = new Uint8Array(memory, ptr, len);
-            return make_value(view.buffer);
+        string_len: (val) => table[val].length,
+        as_string: (val) => {
+            let str = table[val];
+            return exports.__alloc(str.length);
         },
-        object: () => make_value({}),
-        object_append: (obj, key, val) => {
-            table[obj][key] = val;
-        },
-        array: () => make_value([]),
-        array_append: (obj, val) => {
-            table[obj].push(val);
-        },
-        throw: (val) => {
-            let obj = table[val];
-            reset();
-            throw obj;
-        },
+        // bytes: (ptr, len) => {
+        //     let view = new Uint8Array(memory, ptr, len);
+        //     return make_value(view.buffer);
+        // },
+        // object: () => make_value({}),
+        // object_append: (obj, key, val) => {
+        //     table[obj][key] = val;
+        // },
+        // array: () => make_value([]),
+        // array_append: (obj, val) => {
+        //     table[obj].push(val);
+        // },
+        // throw: (val) => {
+        //     let obj = table[val];
+        //     reset();
+        //     throw obj;
+        // },
     };
     
     // Instantiate wasm module.

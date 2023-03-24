@@ -5,7 +5,7 @@ use std::path::Path;
 
 use minify_js::{Session, TopLevelMode};
 
-const JS_LIB_PATH: &str = "wasmql.js";
+const JS_LIB_PATH: &str = "src/wasmql.js";
 
 /// Minifies the js lib, that is then included in the source code of
 /// the `wasmql-build` crate.
