@@ -55,7 +55,7 @@ export default async function ({ endpoint, wasm }) {
     };
     
     // Instantiate wasm module.
-    let module = await WebAssembly.instantiateStreaming(wasm, { env: imports });
+    let module = await WebAssembly.instantiateStreaming(fetch(wasm), { env: imports });
     exports = module.instance.exports;
     memory = exports.memory.buffer;
 

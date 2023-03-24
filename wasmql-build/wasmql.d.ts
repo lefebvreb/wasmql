@@ -1,6 +1,6 @@
 interface CodecInfo {
     endpoint: URL;
-    wasm: Response | PromiseLike<Response>;
+    wasm: URL;
 }
 
 interface Codec {
