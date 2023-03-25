@@ -113,6 +113,8 @@ mod imports {
     }
 }
 
+pub use exports::get_buffer;
+
 /// The index of a js-owned value, stored in a js-side array.
 #[derive(Copy, Clone)]
 #[repr(transparent)]
@@ -236,6 +238,6 @@ impl JsValue {
 
     pub fn throw(self) -> ! {
         unsafe { imports::throw(self) }
-        unreachable!()
+        loop {}
     }
 }

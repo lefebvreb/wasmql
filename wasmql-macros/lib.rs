@@ -144,8 +144,8 @@ pub fn codec(_attr: TokenStream, input: TokenStream) -> TokenStream {
 
         extern_funcs.push(quote! {
             #[no_mangle]
-            unsafe fn #decoder(ptr: *mut u8, len: usize) -> ::wasmql::frontend::JsValue {
-                ::wasmql::frontend::decode::<#tuple>(ptr, len)
+            unsafe fn #decoder() -> ::wasmql::frontend::JsValue {
+                ::wasmql::frontend::decode::<#tuple>()
             }
 
             #[no_mangle]
@@ -183,7 +183,7 @@ pub fn codec(_attr: TokenStream, input: TokenStream) -> TokenStream {
     });
 
     let tokens = quote! {
-        #[cfg(all(target_arch = "wasm32", not(feature = "backend")))]
+        #[cfg(all(target_family = "wasm", not(feature = "wasm-backend")))]
         #[allow(non_snake_case)]
         mod #trait_ident {
             use super::*;
@@ -191,7 +191,7 @@ pub fn codec(_attr: TokenStream, input: TokenStream) -> TokenStream {
             #(#extern_funcs)*
         }
 
-        #[cfg(any(not(target_arch = "wasm32"), feature = "backend"))]
+        #[cfg(any(not(target_family = "wasm"), feature = "wasm-backend"))]
         #input
     };
 

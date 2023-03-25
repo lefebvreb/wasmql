@@ -11,8 +11,9 @@ use serde::Serialize;
 
 pub use self::js::JsValue;
 
-pub unsafe fn decode<T: Serialize + DeserializeOwned>(ptr: *mut u8, len: usize) -> JsValue {
-    let bytes = slice::from_raw_parts(ptr, len);
+pub unsafe fn decode<T: Serialize + DeserializeOwned>() -> JsValue {
+    let (data, len) = js::get_buffer();
+    let bytes = slice::from_raw_parts(data, len);
     let val: T = postcard::from_bytes(bytes).unwrap();
     ser::to_js(&val).unwrap()
 }

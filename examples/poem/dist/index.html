@@ -15,12 +15,7 @@
     </head>
     <body>
         <script type="module">
-            import wasmql from '/wasmql.min.js';
-
-            let codec = await wasmql({
-                endpoint: '/wasmql',
-                wasm: '/codec.wasm',
-            });
+            import wasmql from '/wasmql.js';
 
             function appendItem(item) {
                 let li = document.createElement("li");
@@ -55,6 +50,11 @@
                 desc.value = "";
                 appendItem(item);
             }
+
+            let codec = await wasmql({
+                endpoint: '/wasmql',
+                wasm: '/codec.wasm',
+            });
 
             (await codec.items()).forEach(item => appendItem(item));
         </script>

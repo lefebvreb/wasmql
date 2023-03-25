@@ -5,14 +5,14 @@
 extern crate alloc;
 
 #[doc(hidden)]
-//#[cfg(all(target_arch = "wasm32", not(feature = "backend")))]
+#[cfg(all(target_family = "wasm", not(feature = "wasm-backend")))]
 pub mod frontend;
 
 #[doc(hidden)]
-#[cfg(any(not(target_arch = "wasm32"), feature = "backend"))]
+#[cfg(any(not(target_family = "wasm"), feature = "wasm-backend"))]
 pub mod backend;
 
-#[cfg(any(not(target_arch = "wasm32"), feature = "backend"))]
+#[cfg(any(not(target_family = "wasm"), feature = "wasm-backend"))]
 pub mod error;
 
 pub mod prelude {

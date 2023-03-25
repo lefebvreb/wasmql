@@ -42,7 +42,7 @@ impl TodoCodec for MyCodec<'_> {
 #[poem::handler]
 async fn wasmql(items: Data<&Arc<Mutex<Items>>>, bytes: Vec<u8>) -> poem::Result<Vec<u8>> {
     let mut guard = items.lock().expect("mutex was poisoned");
-
+    
     let codec = MyCodec {
         items: &mut guard,
     };
