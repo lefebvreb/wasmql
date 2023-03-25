@@ -17,10 +17,9 @@ export default async function ({ endpoint, wasm }) {
     // Copies some bytes into wasm.
     function copy(bytes) {
         let len = bytes.length;
-        let ptr = exports.__alloc(len);
-        let view = new Uint8Array(memory, ptr, len);
-        view.set(new Uint8Array(bytes));
-        return [ptr, len]
+        let data = exports.__alloc(len);
+        let view = new Uint8Array(memory, data, len);
+        view.set(bytes);
     }
 
     // Resets the wasm module and js values table.
@@ -36,35 +35,45 @@ export default async function ({ endpoint, wasm }) {
         /* null */
         is_null: (val) => table[val] === null,
         /* number */
-        from_number: (num) => make_value(num),
+        from_number: (n) => make_value(n),
         as_number: (val) => table[val],
         /* string */
         from_string: (ptr, len) => {
             let view = new Uint8Array(memory, ptr, len);
             return make_value(text_decoder.decode(view));
         },
-        string_len: (val) => table[val].length,
-        as_string: (val) => {
-            let str = table[val];
-            return exports.__alloc(str.length);
+        as_string: (val) => copy(text_encoder.encode(table[val])),
+        as_char: (val) => {
+            let str = text_encoder.encode(table[val]);
+            let view = new DataView(new ArrayBuffer(4));
+            new Uint8Array(view.buffer).set(str.slice(0, 4));
+            view.getUint32()
         },
-        // bytes: (ptr, len) => {
-        //     let view = new Uint8Array(memory, ptr, len);
-        //     return make_value(view.buffer);
-        // },
-        // object: () => make_value({}),
-        // object_append: (obj, key, val) => {
-        //     table[obj][key] = val;
-        // },
-        // array: () => make_value([]),
-        // array_append: (obj, val) => {
-        //     table[obj].push(val);
-        // },
-        // throw: (val) => {
-        //     let obj = table[val];
-        //     reset();
-        //     throw obj;
-        // },
+        /* bytes */
+        from_bytes: (ptr, len) => make_value(memory.slice(ptr, len)),
+        as_bytes: (val) => copy(table[val]),
+        /* object */
+        new_object: () => make_value({}),
+        object_append: (obj, key, val) => {
+            table[obj][key] = val;
+        },
+        /* array */
+        new_array: () => make_value([]),
+        array_append: (arr, val) => {
+            table[arr].push(val);
+        },
+        array_len: (val) => table[val].length,
+        array_get: (val, i) => table[val][i],
+        /* iter */
+        new_iter: (val) => make_value(Object.entries(table[val])),
+        iter_key: (val, i) => table[val][i][0],
+        iter_val: (val, i) => table[val][i][1],
+        /* throw */
+        throw: (val) => {
+            let obj = table[val];
+            reset();
+            throw obj;
+        },
     };
     
     // Instantiate wasm module.

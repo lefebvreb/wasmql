@@ -8,14 +8,19 @@ mod exports {
 
     use alloc::alloc::alloc;
 
+    /// A pair of allocated pointer and size.
+    static mut BUFFER: Option<(*mut u8, usize)> = None;
+
     // All exported functions need to be prefixed with a double underscore.
     // User-defined function will be prevented to begin with this prefix.
 
-    /// Allocates some bytes for js to write to.
+    /// Allocates some bytes for js to write into.
     #[no_mangle]
-    unsafe fn __alloc(len: usize) -> *const u8 {
+    unsafe fn __alloc(len: usize) -> *mut u8 {
         let layout = Layout::array::<u8>(len).unwrap();
-        unsafe { alloc(layout) }
+        let data = alloc(layout);
+        BUFFER = Some((data, len));
+        data
     }
 
     /// Resets the allocator.
@@ -26,6 +31,11 @@ mod exports {
     #[no_mangle]
     unsafe fn __reset() {
         super::super::alloc::reset();
+    }
+
+    /// Returns the buffer allocated javascript side.
+    pub fn get_buffer() -> (*mut u8, usize) {
+        unsafe { BUFFER.take().unwrap() }
     }
 }
 
@@ -56,10 +66,8 @@ mod imports {
 
         /// Creates a new `string`.
         pub fn from_string(ptr: *const u8, len: usize) -> JsValue;
-        /// Gets the length of a js-owned `string`.
-        pub fn string_len(val: JsValue) -> usize;
-        /// Gets the utf-8 encoded bytes of a js-owned `string`.
-        pub fn as_string(val: JsValue) -> *mut u8;
+        /// Gets the utf-8 encoded bytes of a js-owned `string` (allocates).
+        pub fn as_string(val: JsValue);
         /// Gets the value as an utf-8 code point.
         pub fn as_char(val: JsValue) -> u32;
 
@@ -67,10 +75,8 @@ mod imports {
 
         /// Creates a new `ArrayBuffer`.
         pub fn from_bytes(ptr: *const u8, len: usize) -> JsValue;
-        /// Gets the length of a js-owned `ArrayBuffer`.
-        pub fn bytes_len(bytes: JsValue) -> usize;
-        /// Gets the bytes of an `ArrayBuffer`.
-        pub fn as_bytes(bytes: JsValue) -> *mut u8;
+        /// Gets the bytes of an `ArrayBuffer` (allocates).
+        pub fn as_bytes(bytes: JsValue);
 
         /* object */
 
@@ -157,9 +163,9 @@ impl JsValue {
 
     pub fn as_string(self) -> String {
         unsafe {
-            let len = imports::string_len(self);
-            let ptr = imports::as_string(self);
-            String::from_raw_parts(ptr, len, len)
+            imports::as_string(self);
+            let (data, len) = exports::get_buffer();
+            String::from_raw_parts(data, len, len)
         }
     }
 
@@ -178,9 +184,9 @@ impl JsValue {
 
     pub fn as_bytes(self) -> Vec<u8> {
         unsafe {
-            let len = imports::bytes_len(self);
-            let ptr = imports::as_bytes(self);
-            Vec::from_raw_parts(ptr, len, len)
+            imports::as_bytes(self);
+            let (data, len) = exports::get_buffer();
+            Vec::from_raw_parts(data, len, len)
         }
     }
 
