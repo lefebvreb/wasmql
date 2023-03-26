@@ -73,11 +73,13 @@ export default async function ({ endpoint, wasm }) {
         as_bytes: (val) => copy(new Uint8Array(table[val])),
         /* object */
         new_object: () => make_value({}),
-        object_append: (obj, key, val) => { table[obj][key] = val; },
+        object_append: (obj, key, val) => {
+            table[obj][table[key]] = table[val];
+        },
         /* array */
         new_array: () => make_value([]),
         array_append: (arr, val) => {
-            table[arr].push(val);
+            table[arr].push(table[val]);
         },
         array_len: (val) => table[val].length,
         array_get: (val, i) => make_value(table[val][i]),
@@ -91,7 +93,6 @@ export default async function ({ endpoint, wasm }) {
             reset();
             throw obj;
         },
-        __log: (val) => console.log(table[val]),
     };
     
     // Instantiate wasm module.
