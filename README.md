@@ -1,11 +1,12 @@
 # WasmQL
 
-WasmQL stands for Wasm Query Layer
+WasmQL stands for Wasm Query Layer. 
+
+TODO: global doc
 
 # TODO
 
 * Tests
-* Finish Documentation
 * Optimize serialization to chunk data output
 * Typescript bindgen
 * Serde i128/u128 to bigints ?

@@ -1,6 +1,6 @@
 #![no_std]
 
-//! WasmQL
+//! TODO: global doc
 
 extern crate alloc;
 
