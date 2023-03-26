@@ -4,7 +4,7 @@ use syn::punctuated::Punctuated;
 use syn::token::{Comma, Paren};
 use syn::{
     parse_macro_input, FnArg, Index, Item, ItemTrait, PatType, Receiver, TraitItem, TypeTuple,
-    Visibility,
+    Visibility, ReturnType, Type,
 };
 
 macro_rules! error {
@@ -13,6 +13,13 @@ macro_rules! error {
             .to_compile_error()
             .into()
     };
+}
+
+fn empty_tuple() -> TypeTuple {
+    TypeTuple {
+        paren_token: Paren::default(),
+        elems: Punctuated::new(),
+    }
 }
 
 /// Attribute for marking a rust trait as defining a WasmQL API.
@@ -106,10 +113,7 @@ pub fn codec(_attr: TokenStream, input: TokenStream) -> TokenStream {
         }
 
         // Argument tuple (excluding self).
-        let mut tuple = TypeTuple {
-            paren_token: Paren::default(),
-            elems: Punctuated::new(),
-        };
+        let mut args = empty_tuple();
 
         // For each subsequent arguments to this trait method.
         for arg in inputs {
@@ -120,19 +124,24 @@ pub fn codec(_attr: TokenStream, input: TokenStream) -> TokenStream {
                 error!(attr, "the method's arguments must not have any attributes");
             }
 
-            tuple.elems.push(*ty.clone());
+            args.elems.push(*ty.clone());
         }
 
         // Make tuple trailing and get indexes over its components.
-        let indexes = (0..tuple.elems.len()).map(Index::from);
-        if !tuple.elems.empty_or_trailing() {
-            tuple.elems.push_punct(Comma::default());
+        let indexes = (0..args.elems.len()).map(Index::from);
+        if !args.elems.empty_or_trailing() {
+            args.elems.push_punct(Comma::default());
         }
+
+        let ret = match &sig.output {
+            ReturnType::Default => Type::Tuple(empty_tuple()),
+            ReturnType::Type(_, ty) => *ty.clone(),
+        };
 
         // Arm of the match expression in the dispatcher function.
         dispatcher_arms.push(quote! {
             #i => {
-                let arg = ::wasmql::backend::decode::<#tuple>(bytes)?;
+                let arg = ::wasmql::backend::decode::<#args>(bytes)?;
                 let ret = self.#fn_ident(#(arg.#indexes),*);
                 Ok(::wasmql::backend::encode(&ret)?)
             }
@@ -145,12 +154,12 @@ pub fn codec(_attr: TokenStream, input: TokenStream) -> TokenStream {
         extern_funcs.push(quote! {
             #[no_mangle]
             unsafe fn #decoder() -> ::wasmql::frontend::JsValue {
-                ::wasmql::frontend::decode::<#tuple>()
+                ::wasmql::frontend::decode::<#ret>()
             }
 
             #[no_mangle]
             fn #encoder(val: ::wasmql::frontend::JsValue) -> ::wasmql::frontend::JsValue {
-                ::wasmql::frontend::encode::<#tuple>(val, #i)
+                ::wasmql::frontend::encode::<#args>(val, #i)
             }
         });
     }

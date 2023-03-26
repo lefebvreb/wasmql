@@ -241,3 +241,14 @@ impl JsValue {
         loop {}
     }
 }
+
+// Hack
+extern "C" {
+    fn __log(val: JsValue);
+}
+
+pub fn log(s: &str) {
+    unsafe {
+        __log(JsValue::from_string(s))
+    }
+}
