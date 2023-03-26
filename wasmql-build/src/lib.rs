@@ -18,9 +18,9 @@
 //!
 //! fn main() -> Result<()> {
 //!     // Destination path of the minified js lib.
-//!     wasmql_build::export_minified_js("static/wasmql.min.js")?;
+//!     wasmql_build::export_minified_js("dist/wasmql.min.js")?;
 //!     // Name of the crate containing your codec, path to write the generated wasm binary to.
-//!     wasmql_build::compile_wasm_codec("my-codec", "static/codec.wasm")?;
+//!     wasmql_build::compile_wasm_codec("my-codec-crate", "dist/codec.wasm")?;
 //!     Ok(())
 //! }
 //! ```
@@ -41,12 +41,31 @@ use std::{env, fs};
 /// Use the [`export_minified_js`] if you want to export this string to a file.
 pub const MINIFIED_JS: &str = include_str!(concat!(env!("OUT_DIR"), "/wasmql.min.js"));
 
+/// Exports the minified javascript WasmQL library to the specified `path`.
+/// 
+/// Can be used to always keep the correct version of this library in your frontend.
+/// 
+/// # Examples
+/// 
+/// ```no_run
+/// wasmql_build::export_minified_js("dist/wasmql.min.js")?;
+/// ```
 pub fn export_minified_js<P: AsRef<Path>>(dest: P) -> Result<()> {
     let dest = dest.as_ref();
     println!("cargo:rerun-if-changed={}", dest.display());
     fs::write(dest, MINIFIED_JS)
 }
 
+/// Compiles your WasmQL codec and exports the resulting `.wasm` binary.
+/// 
+/// `crate_path` is the path to the directory containing your WasmQL codec crate,
+/// and `dest` is the path to export the `.wasm` file to.
+/// 
+/// # Examples
+/// 
+/// ```no_run
+/// wasmql_build::compile_wasm_codec("my-codec-crate", "dist/codec.wasm")?;
+/// ```
 pub fn compile_wasm_codec<P1: AsRef<Path>, P2: AsRef<Path>>(
     crate_path: P1,
     dest: P2,
