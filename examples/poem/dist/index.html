@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>WasmQL demo</title>
+        <title>WasmQL Demo</title>
         <meta charset="utf-8">
         <link rel="stylesheet" href="styles.css">
 
@@ -10,7 +10,7 @@
         <div>
             <input id="new-name">
             <input id="new-desc">
-            <button onclick="createItem()">New Item</button>
+            <button id="create-item">New Item</button>
         </div>
     </head>
     <body>
@@ -30,11 +30,11 @@
                         onclick="markDone(${item.id})"
                     >
                 `;
-                document.querySelector("#items").appendChild(li);
+                document.getElementById("items").append(li);
             }
 
             async function markDone(id) {
-                let check_box = document.querySelector(`#item-${id}`);
+                let check_box = document.getElementById(`item-${id}`);
                 if (!check_box.checked) {
                     check_box.checked = true;
                 } else {
@@ -43,13 +43,15 @@
             }
 
             async function createItem() {
-                let name = document.querySelector("new-name");
-                let desc = document.querySelector("new-desc");
-                let item = await codec.create_item(name.value, name.desc);
+                let name = document.getElementById("new-name");
+                let desc = document.getElementById("new-desc");
+                let item = await codec.create_item(name.value, desc.value);
                 name.value = "";
                 desc.value = "";
                 appendItem(item);
             }
+
+            document.getElementById("create-item").onclick = createItem;
 
             let codec = await wasmql({
                 endpoint: '/wasmql',

@@ -5,14 +5,14 @@ export default async function ({ endpoint, wasm }) {
     // Js-owned values table.
     let table = [false, true, null, undefined];
 
+    // Text decoder, to convert between utf-16 (js) and utf-8 (wasm).
+    let text_decoder = new TextDecoder();
+    let text_encoder = new TextEncoder();
+    
     // Appends a new value to the table, returning it's idx.
     function make_value(val) {
         return table.push(val) - 1;
     }
-
-    // Text decoder, to convert between utf-16 (js) and utf-8 (wasm).
-    let text_decoder = new TextDecoder();
-    let text_encoder = new TextEncoder();
 
     // Copies some bytes into wasm.
     function copy(bytes) {
@@ -26,6 +26,25 @@ export default async function ({ endpoint, wasm }) {
     function reset() {
         exports.__reset();
         table.length = 4;
+    };
+
+    // Makes a request with the given object, encoder and decoder functions.
+    async function query(args, enc_fn, dec_fn) {
+        // Turn args into a value.
+        let val = make_value(args);
+        // Encode value into bytes, and reset module.
+        let body = table[enc_fn(val)];
+        reset();
+        // Perform the requets and extract the resulting bytes.
+        let bytes = await fetch(endpoint, { method: 'POST', body })
+            .then((res) => res.arrayBuffer());
+        // Copy bytes into wasm memory.
+        copy(new Uint8Array(bytes));
+        // Decode result and reset module.
+        let output = table[dec_fn()];
+        reset();
+        // Return output.
+        return output;
     };
 
     // Imports given to the wasm module instance.
@@ -47,33 +66,32 @@ export default async function ({ endpoint, wasm }) {
             let str = text_encoder.encode(table[val]);
             let view = new DataView(new ArrayBuffer(4));
             new Uint8Array(view.buffer).set(str.slice(0, 4));
-            view.getUint32()
+            return view.getUint32();
         },
         /* bytes */
-        from_bytes: (ptr, len) => make_value(memory.slice(ptr, len)),
-        as_bytes: (val) => copy(table[val]),
+        from_bytes: (data, len) => make_value(memory.slice(data, data + len)),
+        as_bytes: (val) => copy(new Uint8Array(table[val])),
         /* object */
         new_object: () => make_value({}),
-        object_append: (obj, key, val) => {
-            table[obj][key] = val;
-        },
+        object_append: (obj, key, val) => { table[obj][key] = val; },
         /* array */
         new_array: () => make_value([]),
         array_append: (arr, val) => {
             table[arr].push(val);
         },
         array_len: (val) => table[val].length,
-        array_get: (val, i) => table[val][i],
+        array_get: (val, i) => make_value(table[val][i]),
         /* iter */
         new_iter: (val) => make_value(Object.entries(table[val])),
-        iter_key: (val, i) => table[val][i][0],
-        iter_val: (val, i) => table[val][i][1],
+        iter_key: (val, i) => make_value(table[val][i][0]),
+        iter_val: (val, i) => make_value(table[val][i][1]),
         /* throw */
         throw: (val) => {
             let obj = table[val];
             reset();
             throw obj;
         },
+        __log: (val) => console.log(table[val]),
     };
     
     // Instantiate wasm module.
@@ -83,25 +101,6 @@ export default async function ({ endpoint, wasm }) {
 
     // Result object.
     let result = {};
-
-    // Makes a request with the given object, encoder and decoder functions.
-    async function query(args, enc_fn, dec_fn) {
-        // Turn args into a value.
-        let val = make_value(args);
-        // Encode value into bytes, and reset module.
-        let body = table[enc_fn(val)];
-        reset();
-        // Perform the requets and extract the resulting bytes.
-        let bytes = await fetch(endpoint, { method: 'POST', body })
-            .then((res) => res.arrayBuffer());
-        // Copy bytes into wasm memory.
-        let [ptr, len] = copy(bytes);
-        // Decode result and reset module.
-        let output = table[dec_fn(ptr, len)];
-        reset();
-        // Return output.
-        return output;
-    };
 
     // For each exported function.
     for (let [enc_fn_name, enc_fn] of Object.entries(exports)) {
