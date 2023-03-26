@@ -6,7 +6,7 @@ use poem::endpoint::StaticFilesEndpoint;
 use poem::http::StatusCode;
 use poem::listener::TcpListener;
 use poem::web::Data;
-use poem::{post, Route, Server, Error, EndpointExt};
+use poem::{post, EndpointExt, Error, Route, Server};
 
 pub type Items = Vec<(i32, codec::Item)>;
 
@@ -15,7 +15,7 @@ struct MyCodec<'a> {
 }
 
 impl TodoCodec for MyCodec<'_> {
-    fn items(self) -> Vec<codec::Item>  {
+    fn items(self) -> Vec<codec::Item> {
         self.items.iter().map(|(_, item)| item).cloned().collect()
     }
 
@@ -33,7 +33,8 @@ impl TodoCodec for MyCodec<'_> {
     }
 
     fn mark_done(self, id: i32) {
-        self.items.iter_mut()
+        self.items
+            .iter_mut()
             .find(|(i, _)| *i == id)
             .map(|(_, item)| item.done = true);
     }
@@ -42,12 +43,11 @@ impl TodoCodec for MyCodec<'_> {
 #[poem::handler]
 async fn wasmql(items: Data<&Arc<Mutex<Items>>>, bytes: Vec<u8>) -> poem::Result<Vec<u8>> {
     let mut guard = items.lock().expect("mutex was poisoned");
-    
-    let codec = MyCodec {
-        items: &mut guard,
-    };
 
-    codec.__dispatch(&bytes)
+    let codec = MyCodec { items: &mut guard };
+
+    codec
+        .__dispatch(&bytes)
         .map_err(|_| Error::from_status(StatusCode::BAD_REQUEST))
 }
 
@@ -57,7 +57,10 @@ pub async fn main() -> io::Result<()> {
 
     let app = Route::new()
         .at("/wasmql", post(wasmql))
-        .nest("/", StaticFilesEndpoint::new("dist").index_file("index.html"))
+        .nest(
+            "/",
+            StaticFilesEndpoint::new("dist").index_file("index.html"),
+        )
         .data(Arc::new(Mutex::new(Items::default())));
 
     println!("Server started at http://127.0.0.1:8080");

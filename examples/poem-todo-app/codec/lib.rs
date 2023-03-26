@@ -19,7 +19,7 @@ pub struct CreateItem {
 
 #[wasmql::codec]
 pub trait TodoCodec {
-    fn items(self) -> Vec<Item>; 
+    fn items(self) -> Vec<Item>;
 
     fn create_item(self, name: String, desc: String) -> Item;
 
