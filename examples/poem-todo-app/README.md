@@ -1,6 +1,6 @@
 # Poem TODO App
 
-This directory contains a minimal example on how to build a simple TODO app using WasmQL, the [Poem](https://crates.io/crates/poem) backend framework and HTML+CSS+JS for the frontend.
+This directory contains a minimal example on building a simple TODO app using WasmQL, the [Poem](https://crates.io/crates/poem) backend framework and HTML, CSS and JS for the frontend.
 
 ## Structure
 

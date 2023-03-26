@@ -1,0 +1,6 @@
+/target
+/Cargo.lock
+
+/dist/**
+!/dist/index.html
+!/dist/styles.css
