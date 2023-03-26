@@ -10,7 +10,7 @@
         <div>
             <input id="new-name">
             <input id="new-desc">
-            <button id="create-item">New Item</button>
+            <button id="create-item" onclick="window.createItem()">New Item</button>
         </div>
     </head>
     <body>
@@ -20,38 +20,36 @@
             function appendItem(item) {
                 let li = document.createElement("li");
                 li.className = "item";
-                li.html = `
+                li.innerHTML = `
                     <h1>${item.name}</h1>
                     <p>${item.desc}</p>
                     <input
                         id="item-${item.id}"
                         type="checkbox" 
                         ${item.done ? "checked": ""}
-                        onclick="markDone(${item.id})"
+                        onclick="window.markDone(${item.id})"
                     >
                 `;
                 document.getElementById("items").append(li);
             }
 
-            async function markDone(id) {
+            window.markDone = async (id) => {
                 let check_box = document.getElementById(`item-${id}`);
                 if (!check_box.checked) {
                     check_box.checked = true;
                 } else {
                     await codec.mark_done(id);
                 }
-            }
+            };
 
-            async function createItem() {
+            window.createItem = async () => {
                 let name = document.getElementById("new-name");
                 let desc = document.getElementById("new-desc");
                 let item = await codec.create_item(name.value, desc.value);
                 name.value = "";
                 desc.value = "";
                 appendItem(item);
-            }
-
-            document.getElementById("create-item").onclick = createItem;
+            };
 
             let codec = await wasmql({
                 endpoint: '/wasmql',

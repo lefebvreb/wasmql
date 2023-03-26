@@ -3,7 +3,7 @@
 use wasmql::prelude::*;
 
 #[wasmql::data]
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct Item {
     pub id: i32,
     pub name: String,
@@ -12,7 +12,6 @@ pub struct Item {
 }
 
 #[wasmql::data]
-#[derive(Debug)]
 pub struct CreateItem {
     pub name: String,
     pub desc: String,
