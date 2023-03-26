@@ -51,6 +51,7 @@
                 appendItem(item);
             };
 
+            // Instantiate the WasmQL codec.
             let codec = await wasmql({
                 endpoint: '/wasmql',
                 wasm: '/codec.wasm',
