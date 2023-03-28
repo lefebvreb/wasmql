@@ -1,0 +1,16 @@
+[package]
+name = "hyper-html-js"
+version = "0.0.0"
+edition = "2021"
+
+[workspace]
+members = ["codec"]
+
+[dependencies]
+codec = { path = "codec" }
+http-body-util = "0.1.0-rc.2"
+hyper = { version = "1.0.0-rc.3", features = ["http1", "server"] }
+tokio = { version = "1", features = ["fs", "macros", "net", "rt-multi-thread"] }
+
+[build-dependencies]
+wasmql-build = { path = "../../wasmql-build" }

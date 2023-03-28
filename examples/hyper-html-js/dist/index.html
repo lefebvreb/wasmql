@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>WasmQL Demo</title>
+    </head>
+    <body>
+        <input id="name" oninput="window.onNameChange()" value="John Doe">
+        <h1 id="greeting">Hello, John Doe!</h1>
+
+        <script type="module">
+            import wasmql from "/wasmql.min.js";
+
+            let codec = await wasmql({
+                endpoint: "/wasmql",
+                wasm: "/codec.wasm",
+            });
+
+            document.getElementById("name").oninput = (e) => {
+                let name = e.target.value;
+                codec.greet(name)
+                    .then((greeting) => document.getElementById("greeting").innerHTML = greeting);
+            };
+        </script>
+    </body>
+</html>

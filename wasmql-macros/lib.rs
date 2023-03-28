@@ -104,7 +104,7 @@ pub fn codec(_attr: TokenStream, input: TokenStream) -> TokenStream {
 
         // First argument must be `self`.
         let Some(FnArg::Receiver(Receiver { attrs, reference: None, mutability: None, .. })) = inputs.next() else {
-            error!(&sig.inputs[0], "the method's first argument must be self");
+            error!(&sig.inputs, "the method's first argument must be self");
         };
 
         // First argument must not have attributes.
