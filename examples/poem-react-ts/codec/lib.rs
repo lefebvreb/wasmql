@@ -23,5 +23,5 @@ pub trait TodoCodec {
 
     fn create_item(self, name: String, desc: String) -> Item;
 
-    fn mark_done(self, id: i32);
+    fn set_done(self, id: i32, done: bool);
 }

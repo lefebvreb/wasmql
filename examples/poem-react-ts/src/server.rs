@@ -32,11 +32,11 @@ impl TodoCodec for MyCodec<'_> {
         item
     }
 
-    fn mark_done(self, id: i32) {
+    fn set_done(self, id: i32, done: bool) {
         self.items
             .iter_mut()
             .find(|(i, _)| *i == id)
-            .map(|(_, item)| item.done = true);
+            .map(|(_, item)| item.done = done);
     }
 }
 
