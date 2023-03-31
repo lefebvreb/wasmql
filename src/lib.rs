@@ -1,3 +1,4 @@
+#![cfg_attr(doc_cfg, feature(doc_cfg))]
 #![no_std]
 
 //! TODO: global doc
@@ -13,7 +14,10 @@ pub mod frontend;
 pub mod backend;
 
 #[cfg(any(not(target_family = "wasm"), feature = "wasm-backend"))]
-pub mod error;
+mod error;
+
+#[cfg(any(not(target_family = "wasm"), feature = "wasm-backend"))]
+pub use error::*;
 
 pub mod prelude {
     //! `use wasmql::prelude::*;` to import common types missing in `no_std` environments.

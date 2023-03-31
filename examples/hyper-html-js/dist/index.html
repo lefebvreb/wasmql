@@ -6,7 +6,7 @@
     </head>
     <body>
         <label for="name">Your name:</label>
-        <input id="name" oninput="window.onNameChange()" value="John Doe">
+        <input id="name" value="John Doe">
         <h1 id="greeting">Hello, John Doe!</h1>
 
         <script type="module">
@@ -20,7 +20,9 @@
             document.getElementById("name").oninput = (e) => {
                 let name = e.target.value;
                 codec.greet(name)
-                    .then((greeting) => document.getElementById("greeting").innerHTML = greeting);
+                    .then((greeting) => {
+                        document.getElementById("greeting").innerHTML = greeting;
+                    });
             };
         </script>
     </body>

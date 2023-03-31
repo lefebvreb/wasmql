@@ -3,8 +3,8 @@ use quote::{format_ident, quote};
 use syn::punctuated::Punctuated;
 use syn::token::{Comma, Paren};
 use syn::{
-    parse_macro_input, FnArg, Index, Item, ItemTrait, PatType, Receiver, TraitItem, TypeTuple,
-    Visibility, ReturnType, Type,
+    parse_macro_input, FnArg, Index, Item, ItemTrait, PatType, Receiver, ReturnType, TraitItem,
+    Type, TypeTuple, Visibility,
 };
 
 macro_rules! error {
@@ -22,14 +22,24 @@ fn empty_tuple() -> TypeTuple {
     }
 }
 
-/// Attribute for marking a rust trait as defining a WasmQL API.
+/// Attribute for marking a rust trait as defining a WasmQL codec.
 ///
 /// This attribute can be applied to a rust trait that only contains
 /// methods, whose signatures are `fn(self, T) -> U` where `T` and
 /// `U` are enums or structs marked with the `#[data]` attribute.
 ///
-/// This attribute has no effects to the underlying trait if compiled for
-/// the backend, but will drastically change it if compiled to `wasm32`.
+/// In the backend, the trait will mostly remain as-is, with a single new method
+/// added to it, having the signature:
+///
+/// ```no_run
+/// dispatch(self, &[u8]) -> wasmql::Result<Vec<u8>>
+/// ```
+///
+/// This method can be used to decode a binary payload, handle it and encode the result
+/// into a `Vec<u8>`.
+///
+/// In the frontend, this trait will be transformed into a module that exports some functions
+/// to JavaScript.
 ///
 /// # Examples
 ///
@@ -95,8 +105,15 @@ pub fn codec(_attr: TokenStream, input: TokenStream) -> TokenStream {
         // Name does not begin with "__".
         if fn_ident.to_string().starts_with("__") {
             error!(
-                fn_ident.clone(),
-                "the method identifier must not begin with a double underscore"
+                fn_ident,
+                "the method identifier must not begin with a double underscore \"__\""
+            );
+        }
+
+        if *fn_ident == "dispatch" {
+            error!(
+                fn_ident,
+                "the method identifier \"dispatch\" is reserved and cannot be used"
             );
         }
 
@@ -174,15 +191,13 @@ pub fn codec(_attr: TokenStream, input: TokenStream) -> TokenStream {
             /// First, this method decodes the raw `bytes` of the message. On success,
             /// the correct handling method is called on `self` with the decoded value. Then,
             /// the result is encoded and returned as a `Vec<u8>`.
-            ///
-            ///
-            fn __dispatch(self, bytes: &[u8]) -> ::wasmql::error::Result<::wasmql::prelude::Vec<u8>>
+            fn dispatch(self, bytes: &[u8]) -> ::wasmql::Result<::wasmql::prelude::Vec<u8>>
             where
                 Self: Sized,
             {
                 match ::wasmql::backend::discriminant(bytes)? {
                     #(#dispatcher_arms)*
-                    _ => Err(::wasmql::error::Error::Discriminant),
+                    _ => Err(::wasmql::Error::Discriminant),
                 }
             }
         }

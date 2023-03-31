@@ -19,9 +19,11 @@ pub struct CreateItem {
 
 #[wasmql::codec]
 pub trait TodoCodec {
-    fn items(self) -> Vec<Item>;
+    fn create(self, name: String, desc: String) -> Item;
 
-    fn create_item(self, name: String, desc: String) -> Item;
+    fn remove(self, id: i32);
+
+    fn items(self) -> Vec<Item>;
 
     fn set_done(self, id: i32, done: bool);
 }

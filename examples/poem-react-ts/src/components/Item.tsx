@@ -11,6 +11,7 @@ export type ItemData = {
 function Item(props: {
     codec: Codec,
     data: ItemData,
+    remove: (id: number) => void,
 }) {
     let [checked, setChecked] = useState(props.data.done);
 
@@ -19,10 +20,19 @@ function Item(props: {
         setChecked(!checked);
     }
 
+    async function onRemove() {
+        await props.codec.remove(props.data.id);
+        props.remove(props.data.id);
+    }
+
     return <div>
         <h3>{props.data.name}</h3>
         <p>{props.data.desc}</p>
-        <input type="checkbox" checked={checked} onChange={onChecked}></input>
+        <label>
+            Done:
+            <input type="checkbox" checked={checked} onChange={onChecked}></input>
+        </label>
+        <button onClick={onRemove}>Remove</button>
     </div>;
 }
 

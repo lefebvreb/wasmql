@@ -1,3 +1,4 @@
+use std::collections::BTreeMap;
 use std::io;
 use std::sync::{Arc, Mutex};
 
@@ -8,46 +9,43 @@ use poem::listener::TcpListener;
 use poem::web::Data;
 use poem::{post, EndpointExt, Error, Route, Server};
 
-pub type Items = Vec<(i32, codec::Item)>;
+pub type Items = BTreeMap<i32, codec::Item>;
 
 struct MyCodec<'a> {
     items: &'a mut Items,
 }
 
 impl TodoCodec for MyCodec<'_> {
-    fn items(self) -> Vec<codec::Item> {
-        self.items.iter().map(|(_, item)| item).cloned().collect()
-    }
-
-    fn create_item(self, name: String, desc: String) -> codec::Item {
-        let item = codec::Item {
-            id: self.items.len() as i32,
-            name,
-            desc,
-            done: false,
-        };
-
-        self.items.push((item.id, item.clone()));
-
+    fn create(self, name: String, desc: String) -> codec::Item {
+        let id = self.items.last_key_value().map(|(&id, _)| id).unwrap_or_default() + 1;
+        let item = codec::Item { id, name, desc, done: false };
+        self.items.insert(id, item.clone());
         item
     }
 
+    fn remove(self, id: i32) {
+        self.items.remove(&id);
+    }
+
+    fn items(self) -> Vec<codec::Item> {
+        self.items.values().cloned().collect()
+    }
+
     fn set_done(self, id: i32, done: bool) {
-        self.items
-            .iter_mut()
-            .find(|(i, _)| *i == id)
-            .map(|(_, item)| item.done = done);
+        if let Some(item) = self.items.get_mut(&id) {
+            item.done = done;
+        }
     }
 }
 
 #[poem::handler]
 async fn wasmql(items: Data<&Arc<Mutex<Items>>>, bytes: Vec<u8>) -> poem::Result<Vec<u8>> {
-    let mut guard = items.lock().expect("mutex was poisoned");
+    let mut items = items.lock().expect("mutex was poisoned");
 
-    let codec = MyCodec { items: &mut guard };
+    let codec = MyCodec { items: &mut items };
 
     codec
-        .__dispatch(&bytes)
+        .dispatch(&bytes)
         .map_err(|_| Error::from_status(StatusCode::BAD_REQUEST))
 }
 

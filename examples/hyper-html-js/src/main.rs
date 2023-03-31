@@ -37,7 +37,7 @@ async fn wasmql(req: Request<Incoming>) -> Result<Response<Full<Bytes>>> {
 
     // Dispatch wasmql call and build a response.
     Ok(MyCodecImpl
-        .__dispatch(&body)
+        .dispatch(&body)
         .map(|res| Response::new(Full::new(res.into())))
         .unwrap_or_else(|_| http_error(StatusCode::BAD_REQUEST, "wasmql codec error")))
 }

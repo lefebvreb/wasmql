@@ -11,7 +11,7 @@ function NewItem(props: {
 
     async function createItem() {
         if (name && desc) {
-            let item = await props.codec.create_item(name, desc);
+            let item = await props.codec.create(name, desc);
             setName("");
             setDesc("");
             props.addItem(item);
@@ -22,11 +22,11 @@ function NewItem(props: {
         <h2>New Item</h2>
         <label>
             Item name:
-            <input type="text" onChange={e => setName(e.target.value)}/>
+            <input type="text" value={name} onChange={e => setName(e.target.value)}/>
         </label>
         <label>
             Item description:
-            <input type="text" onChange={e => setDesc(e.target.value)}/>
+            <input type="text" value={desc} onChange={e => setDesc(e.target.value)}/>
         </label>
         <button onClick={createItem}>New Item</button>
     </div>;

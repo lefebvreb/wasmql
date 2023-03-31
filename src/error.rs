@@ -11,6 +11,10 @@ use core::fmt;
 ///
 /// See the individual variants documentations for additional
 /// information about the possible errors.
+#[cfg_attr(
+    doc_cfg,
+    doc(cfg(any(not(target_family = "wasm"), feature = "wasm-backend")))
+)]
 #[derive(Clone, Eq, PartialEq, Debug)]
 pub enum Error {
     /// Error during decoding/encoding of the raw bytes
@@ -38,6 +42,10 @@ impl fmt::Display for Error {
     }
 }
 
-/// Convenient alias for a standard library [`Result`](std::result::Result), with
+/// Convenient alias for a standard library [`Result`](core::result::Result), with
 /// its `E` generic set to be [`enum@Error`].
+#[cfg_attr(
+    doc_cfg,
+    doc(cfg(any(not(target_family = "wasm"), feature = "wasm-backend")))
+)]
 pub type Result<T> = core::result::Result<T, Error>;
