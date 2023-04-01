@@ -5,6 +5,10 @@ This directory contains a complete example of using WasmQL to create a simple TO
 * Backend: [poem](https://crates.io/crates/poem) (Rust).
 * Frontend: [React](https://react.dev/), CSS, TypeScript and [Vite](https://vitejs.dev/).
 
+## Render
+
+![webpage render](https://github.com/L-Benjamin/wasmql/tree/main/doc/poem-react-ts.jpg)
+
 ## Structure
 
 <!-- The structure of this project is pretty standard and straightforward:

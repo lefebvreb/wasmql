@@ -25,14 +25,13 @@ function Item(props: {
         props.remove(props.data.id);
     }
 
-    return <div>
-        <h3>{props.data.name}</h3>
+    let classes = (checked) ? "item item-checked" : "item";
+
+    return <div className={classes}>
+        <h2>{props.data.name}</h2>
         <p>{props.data.desc}</p>
-        <label>
-            Done:
-            <input type="checkbox" checked={checked} onChange={onChecked}></input>
-        </label>
-        <button onClick={onRemove}>Remove</button>
+        <input type="checkbox" checked={checked} onChange={onChecked}></input>
+        <button className="bold" onClick={onRemove}>X</button>
     </div>;
 }
 

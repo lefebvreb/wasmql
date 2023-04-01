@@ -1,0 +1,121 @@
+html, body {
+    margin: 0;
+    height: 100%;
+
+    --background1: #654ff0;
+    --background2: #bec5ff;
+    --text2: #161d5f;
+}
+
+button {
+    color: white;
+    border: solid white;
+    background-color: transparent;
+    cursor: pointer;
+    font-size: 20px;
+    font-weight: 600;
+}
+
+button:hover {
+    background-color: #553fe0;
+}
+
+button:active {
+    background-color: #452fd0;
+}
+
+.bold {
+    font-size: 20px;
+    font-weight: 600;
+}
+
+#root {
+    height: 100%;
+    
+    display: grid;
+    grid-template-columns: 400px auto;
+}
+
+#root-sidebar {
+    background-color: var(--background1);
+    color: white;
+    padding: 20px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#sidebar-form {
+    border: solid white;
+    padding: 30px;
+}
+
+.form-input {
+    width: 300px;
+    height: 30px;
+    border: none;
+    background-color: var(--background2);
+    color: var(--text2);
+}
+
+#form-button {
+    width: 300px;
+    height: 50px;
+    margin-top: 50px;
+}
+
+#root-content {
+    background-color: var(--background2);
+    color: var(--text2);
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.item {
+    border: solid white;
+
+    margin: 20px;
+    padding: 10px;
+    width: 600px;
+    
+    color: white;
+    background-color: var(--background1);
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+}
+
+.item h2 {
+    margin: 0;
+}
+
+.item input {
+    position: absolute;
+    left: 10px;
+    top: 10px;
+
+    width: 30px;
+    height: 30px;
+}
+
+.item button {
+    position: absolute;
+    right: 10px;
+    top: 10px;
+
+    width: 30px;
+    height: 30px;
+}
+
+.item-checked h2 {
+    text-decoration: line-through;
+}
+
+.item-checked p {
+    text-decoration: line-through;
+}
