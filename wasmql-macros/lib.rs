@@ -42,6 +42,8 @@ fn empty_tuple() -> TypeTuple {
 /// to JavaScript.
 ///
 /// # Examples
+/// 
+/// In your codec:
 ///
 /// ```no_run
 /// #[wasmql::data]
@@ -59,6 +61,20 @@ fn empty_tuple() -> TypeTuple {
 ///
 ///     fn get_resource(self, session: Session) -> String;
 /// }
+/// ```
+/// 
+/// In your backend:
+/// 
+/// ```no_run
+/// struct MyApiImpl;
+/// 
+/// impl MyApi for MyApiImpl {
+///     /* implementation omitted */
+/// }
+/// 
+/// let msg: &[u8] = receive();
+/// let res: Vec<u8> = MyApiImpl.dispath(msg)?;
+/// send(res);
 /// ```
 #[proc_macro_attribute]
 pub fn codec(_attr: TokenStream, input: TokenStream) -> TokenStream {

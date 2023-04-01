@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import Item, { ItemData } from "./components/Item";
 import NewItem from "./components/NewItem";
-import wasmql, { Codec } from "./wasmql.min";
+import wasmql, { Codec } from "./wasmql";
 
 function App() {
     let codec_ref = useRef<Codec | undefined>();

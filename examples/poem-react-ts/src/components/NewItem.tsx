@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Codec } from "../wasmql.min";
+import { Codec } from "../wasmql";
 import { ItemData } from "./Item";
 
 function NewItem(props: {

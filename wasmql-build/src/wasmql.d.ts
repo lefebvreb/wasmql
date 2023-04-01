@@ -1,6 +1,6 @@
 interface CodecInfo {
-    endpoint: URL;
-    wasm: URL;
+    endpoint: string;
+    wasm: string;
 }
 
 interface Codec {

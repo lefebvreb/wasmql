@@ -6,7 +6,7 @@
 
 use core::fmt;
 
-/// An error that may occur during dipatching of a query
+/// An error that may occur during dispatch of a query
 /// to a codec handler.
 ///
 /// See the individual variants documentations for additional
@@ -43,7 +43,7 @@ impl fmt::Display for Error {
 }
 
 /// Convenient alias for a standard library [`Result`](core::result::Result), with
-/// its `E` generic set to be [`enum@Error`].
+/// its `E` generic type set to be [`enum@Error`].
 #[cfg_attr(
     doc_cfg,
     doc(cfg(any(not(target_family = "wasm"), feature = "wasm-backend")))
