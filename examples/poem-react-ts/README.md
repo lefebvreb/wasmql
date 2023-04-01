@@ -7,7 +7,7 @@ This directory contains a complete example of using WasmQL to create a simple TO
 
 ## Render
 
-![webpage render](https://github.com/L-Benjamin/wasmql/tree/main/doc/poem-react-ts.jpg)
+![webpage render](doc/poem-react-ts.jpg)
 
 ## Structure
 
