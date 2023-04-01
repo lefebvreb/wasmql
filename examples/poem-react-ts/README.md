@@ -7,7 +7,7 @@ This directory contains a complete example of using WasmQL to create a simple TO
 
 ## Render
 
-<img src="/doc/poem-react-ts.jpg" width="350" title="HTML render of the TODO app">
+<img src="/doc/poem-react-ts.jpg" width="800" title="HTML render of the TODO app">
 
 ## Structure
 
