@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Item, { ItemData } from "./components/Item";
 import NewItem from "./components/NewItem";
 import wasmql, { Codec } from "./wasmql";
@@ -7,9 +7,13 @@ function App() {
     let codec_ref = useRef<Codec | undefined>();
     let [items, setItems] = useState<ItemData[]>([]);
 
-    const addItem = (item: ItemData) => setItems(items.concat(item));
+    function addItem(item: ItemData) {
+        setItems(items.concat(item));
+    }
 
-    const removeItem = (id: number) => setItems(items.filter((item) => item.id != id));
+    function removeItem(id: number) {
+        setItems(items.filter((item) => item.id != id));
+    }
 
     useEffect(() => {
         wasmql({

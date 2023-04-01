@@ -7,8 +7,8 @@ edition = "2021"
 members = ["codec"]
 
 [[bin]]
-name = "poem-react-ts"
-path = "src/server.rs"
+name = "server"
+path = "server.rs"
 
 [dependencies]
 codec = { path = "codec" }

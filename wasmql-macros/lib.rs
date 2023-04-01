@@ -23,6 +23,9 @@ fn empty_tuple() -> TypeTuple {
 }
 
 /// Attribute for marking a rust trait as defining a WasmQL codec.
+/// 
+/// It is **highly advised** to make a crate using this macro `#![no_std]`, as
+/// that will greatly reduce the size of your binary when compiled to WebAssembly.
 ///
 /// This attribute can be applied to a rust trait that only contains
 /// methods, whose signatures are `fn(self, T) -> U` where `T` and
