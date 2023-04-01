@@ -5,26 +5,7 @@ import wasmql, { Codec } from "./wasmql";
 
 function App() {
     let codec_ref = useRef<Codec | undefined>();
-    let [items, setItems] = useState<ItemData[]>([
-        {
-            id: 1,
-            name: "Test Item 1",
-            desc: "This is a test item",
-            done: false,
-        },
-        {
-            id: 2,
-            name: "Test Item 2",
-            desc: "This is a test item",
-            done: true,
-        },
-        {
-            id: 3,
-            name: "Test Item 3",
-            desc: "This is a test item",
-            done: false,
-        },
-    ]);
+    let [items, setItems] = useState<ItemData[]>([]);
 
     const addItem = (item: ItemData) => setItems(items.concat(item));
 
@@ -40,7 +21,7 @@ function App() {
         });
     }, []);
 
-    if (codec_ref.current === undefined) {
+    if (codec_ref.current == undefined) {
         return <></>;
     }
 
@@ -53,7 +34,7 @@ function App() {
         </div>
         <div id="root-content">
             <h1>Items</h1>
-            {items.map((item, i) => <Item key={i} remove={removeItem} codec={codec} data={item}/>)}
+            {items.map((item) => <Item key={item.id} remove={removeItem} codec={codec} data={item}/>)}
         </div>
     </>;
 }
