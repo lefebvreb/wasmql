@@ -8,4 +8,4 @@ path = "lib.rs"
 
 [dependencies]
 lazy_static = { version = "1", features = ["spin_no_std"] }
-wasmql = { path = "../../" }
+wasmql = { path = "../../", features = ["debug-panic-fmt"] }

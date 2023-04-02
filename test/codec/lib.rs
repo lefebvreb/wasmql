@@ -3,6 +3,7 @@
 extern crate alloc;
 
 use alloc::vec;
+use alloc::collections::BTreeMap;
 use lazy_static::lazy_static;
 use wasmql::prelude::*;
 
@@ -56,6 +57,7 @@ pub struct EchoData {
     enum_new_type: Enum,
     enum_tup: Enum,
     enum_struct: Enum,
+    map: BTreeMap<String, u16>,
 }
 
 lazy_static! {
@@ -76,5 +78,8 @@ lazy_static! {
         enum_new_type: Enum::NewTypeVariant("john".to_string()),
         enum_tup: Enum::TupleVariant(1.0, "0.0".to_string(), -1.0),
         enum_struct: Enum::StructVariant { a: 1, b: 2, c: 3 },
+        map: vec![("x".to_string(), 16), ("y".to_string(), 32), ("z".to_string(), 64)]
+            .into_iter()
+            .collect(),
     };
 }

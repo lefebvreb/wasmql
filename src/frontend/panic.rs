@@ -25,23 +25,35 @@ impl fmt::Display for Throw {
 
 impl ser::Error for Throw {
     fn custom<T: Display>(msg: T) -> Self {
-        panic!("serialization error: {msg}")
+        #[cfg(feature = "debug-panic-fmt")]
+        panic!("serialization error: {msg}");
+        #[cfg(not(feature = "debug-panic-fmt"))]
+        panic!();
     }
 }
 
 impl de::Error for Throw {
     fn custom<T: Display>(msg: T) -> Self {
-        panic!("deserialization error: {msg}")
+        #[cfg(feature = "debug-panic-fmt")]
+        panic!("deserialization error: {msg}");
+        #[cfg(not(feature = "debug-panic-fmt"))]
+        panic!();
     }
 }
 
 impl From<postcard::Error> for Throw {
     fn from(err: postcard::Error) -> Self {
-        panic!("postcard error: {err}")
+        #[cfg(feature = "debug-panic-fmt")]
+        panic!("postcared error: {err}");
+        #[cfg(not(feature = "debug-panic-fmt"))]
+        panic!();
     }
 }
 
 #[panic_handler]
 fn panic_handler(info: &PanicInfo) -> ! {
-    JsValue::from_string(&alloc::format!("{info}")).throw()
+    #[cfg(feature = "debug-panic-fmt")]
+    JsValue::from_string(&alloc::format!("{info}")).throw();
+    #[cfg(not(feature = "debug-panic-fmt"))]
+    JsValue::from_string("WasmQL type error").throw();
 }

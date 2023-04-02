@@ -2,7 +2,7 @@
 <html lang="en">
     <head>
         <meta charset="utf-8">
-        <title>WasmQL Demo</title>
+        <title>WasmQL Test</title>
         <script src="./lodash.js"></script>
     </head>
     <body>
@@ -28,7 +28,8 @@
                 enum_unit: "UnitVariant",
                 enum_new_type: { "NewTypeVariant": "john" },
                 enum_tup: { "TupleVariant": [1.0, "0.0", -1.0] },
-                enum_struct: { "StructVariant": { a: 1, b: 2, c: 3 } }
+                enum_struct: { "StructVariant": { a: 1, b: 2, c: 3 } },
+                map: { "x": 16, "y": 32, "z": 64 },
             };
 
             let codec = await wasmql({
