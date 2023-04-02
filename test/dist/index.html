@@ -6,13 +6,13 @@
         <script src="./lodash.js"></script>
     </head>
     <body>
-        <p id="result"></p>
+        <h1>Check the console!</h1>
         <script type="module">
             import wasmql from "/wasmql.js";
 
             const UTF8_TEST = "~𝘈Ḇ𝖢𝕯٤ḞԍНǏ𝙅ƘԸⲘ𝙉০Ρ𝗤Ɍ𝓢ȚЦ𝒱Ѡ𝓧ƳȤѧᖯć𝗱ễ𝑓𝙜Ⴙ𝞲𝑗𝒌ļṃŉо𝞎𝒒ᵲꜱ𝙩ừ𝗏ŵ𝒙𝒚ź1234567890!@#$%^&*()-_=+[{]};:'\",<.>/?";
 
-            const DATA = {
+            const TEST_DATA = {
                 int: -8265628,
                 float: 42.0,
                 string: UTF8_TEST,
@@ -28,11 +28,11 @@
                 wasm: "/codec.wasm",
             });
 
-            let data = await codec.echo(DATA);
+            let data = await codec.echo(TEST_DATA);
 
-            console.assert(_.isEqual(data, DATA), "mismatch");
-            console.log("sent:", JSON.stringify(DATA));
-            console.log("recv:", JSON.stringify(data));
+            console.assert(_.isEqual(data, TEST_DATA), "mismatch");
+            console.log("sent:", JSON.stringify(TEST_DATA));
+            console.log("received:", JSON.stringify(data));
         </script>
     </body>
 </html>

@@ -10,7 +10,7 @@ struct TestCodecImpl;
 
 impl TestCodec for TestCodecImpl {
     fn echo(self, data: codec::EchoData) -> codec::EchoData {
-        assert_eq!(data, *codec::DATA);
+        assert_eq!(data, *codec::TEST_DATA);
         data
     }
 }

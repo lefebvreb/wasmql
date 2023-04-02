@@ -32,7 +32,7 @@ pub struct EchoData {
 }
 
 lazy_static! {
-    pub static ref DATA: EchoData = EchoData {
+    pub static ref TEST_DATA: EchoData = EchoData {
         int: -8265628,
         float: 42.0,
         string: UTF8_TEST.to_string(),
