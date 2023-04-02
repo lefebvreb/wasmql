@@ -149,9 +149,11 @@ impl<'de> Deserializer<'de> for JsDeserializer {
     }
 
     fn deserialize_map<V: Visitor<'de>>(self, visitor: V) -> Result<V::Value> {
+        let iter = self.0.new_iter();
+        let len = iter.array_len();
         visitor.visit_map(Map {
-            iter: self.0.new_iter(),
-            len: self.0.array_len(),
+            iter,
+            len,
             key_idx: 0,
             val_idx: 0,
         })

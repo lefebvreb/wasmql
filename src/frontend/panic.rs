@@ -24,28 +24,24 @@ impl fmt::Display for Throw {
 }
 
 impl ser::Error for Throw {
-    fn custom<T: Display>(_msg: T) -> Self {
-        panic!("serialization error")
+    fn custom<T: Display>(msg: T) -> Self {
+        panic!("serialization error: {msg}")
     }
 }
 
 impl de::Error for Throw {
-    fn custom<T: Display>(_msg: T) -> Self {
-        panic!("deserialization error")
+    fn custom<T: Display>(msg: T) -> Self {
+        panic!("deserialization error: {msg}")
     }
 }
 
 impl From<postcard::Error> for Throw {
-    fn from(_err: postcard::Error) -> Self {
-        panic!("postcard error")
+    fn from(err: postcard::Error) -> Self {
+        panic!("postcard error: {err}")
     }
 }
 
 #[panic_handler]
 fn panic_handler(info: &PanicInfo) -> ! {
-    match info.payload().downcast_ref::<&str>() {
-        Some(s) => JsValue::from_string(s),
-        _ => JsValue::from_string("rust panic"),
-    }
-    .throw()
+    JsValue::from_string(&alloc::format!("{info}")).throw()
 }

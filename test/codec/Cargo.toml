@@ -7,5 +7,5 @@ edition = "2021"
 path = "lib.rs"
 
 [dependencies]
-lazy_static = "1"
+lazy_static = { version = "1", features = ["spin_no_std"] }
 wasmql = { path = "../../" }

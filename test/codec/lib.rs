@@ -8,6 +8,9 @@ pub trait TestCodec {
     fn echo(self, data: EchoData) -> EchoData;
 }
 
+const UTF8_TEST: &str = "~𝘈Ḇ𝖢𝕯٤ḞԍНǏ𝙅ƘԸⲘ𝙉০Ρ𝗤Ɍ𝓢ȚЦ𝒱Ѡ𝓧ƳȤѧᖯć𝗱ễ𝑓𝙜Ⴙ𝞲𝑗𝒌ļṃŉо𝞎𝒒ᵲꜱ𝙩ừ𝗏ŵ𝒙𝒚ź1234567890!@#$%^&*()-_=+[{]};:'\",<.>/?";
+
+
 #[wasmql::data]
 #[derive(PartialEq, Debug)]
 pub struct NewType(pub u64);
@@ -32,5 +35,7 @@ pub struct EchoData {
 lazy_static! {
     pub static ref DATA: EchoData = EchoData {
         int: -8265628,
+        // float: 42.42,
+        // string: UTF8_TEST.to_string(),
     };
 }

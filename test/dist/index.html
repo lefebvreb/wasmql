@@ -6,7 +6,7 @@
     </head>
     <body>
         <script type="module">
-            import wasmql from "/wasmql.js";
+            import wasmql from "/wasmql-copy.js";
 
             const UTF8_TEST = "~𝘈Ḇ𝖢𝕯٤ḞԍНǏ𝙅ƘԸⲘ𝙉০Ρ𝗤Ɍ𝓢ȚЦ𝒱Ѡ𝓧ƳȤѧᖯć𝗱ễ𝑓𝙜Ⴙ𝞲𝑗𝒌ļṃŉо𝞎𝒒ᵲꜱ𝙩ừ𝗏ŵ𝒙𝒚ź1234567890!@#$%^&*()-_=+[{]};:'\",<.>/?";
 
@@ -28,7 +28,7 @@
 
             let data = await codec.echo(DATA);
 
-            console.assert(data == DATA, "assertion mismatch:", data, DATA);
+            console.assert(data == DATA, "mismatch", data, DATA);
         </script>
     </body>
 </html>
