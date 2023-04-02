@@ -70,8 +70,6 @@ mod imports {
         pub fn from_string(ptr: *const u8, len: usize) -> JsValue;
         /// Gets the utf-8 encoded bytes of a js-owned `string` (allocates).
         pub fn as_string(val: JsValue);
-        /// Gets the value as an utf-8 code point.
-        pub fn as_char(val: JsValue) -> u32;
 
         /* bytes */
 
@@ -174,10 +172,8 @@ impl JsValue {
     }
 
     pub fn as_char(self) -> char {
-        unsafe {
-            let code = imports::as_char(self);
-            char::from_u32_unchecked(code)
-        }
+        let string = self.as_string();
+        string.chars().next().unwrap()
     }
 
     pub fn is_string(self) -> bool {
