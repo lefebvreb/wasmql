@@ -61,6 +61,8 @@ mod imports {
         pub fn from_number(num: f64) -> JsValue;
         /// Gets the value as a `f64`.
         pub fn as_number(val: JsValue) -> f64;
+        /// Returns true iff the value is a string.
+        pub fn is_string(val: JsValue) -> bool;
 
         /* string */
 
@@ -176,6 +178,10 @@ impl JsValue {
             let code = imports::as_char(self);
             char::from_u32_unchecked(code)
         }
+    }
+
+    pub fn is_string(self) -> bool {
+        unsafe { imports::is_string(self) }
     }
 
     /* bytes */

@@ -174,7 +174,7 @@ impl Serializer for JsSerializer {
         let obj = JsValue::new_object();
         let k = JsValue::from_string(variant);
         let arr = JsValue::new_array();
-        arr.object_append(k, arr);
+        obj.object_append(k, arr);
         Ok(Tuple {
             parent: obj,
             child: arr,

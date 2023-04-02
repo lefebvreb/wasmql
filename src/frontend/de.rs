@@ -174,10 +174,17 @@ impl<'de> Deserializer<'de> for JsDeserializer {
         _variants: &'static [&'static str],
         visitor: V,
     ) -> Result<V::Value> {
-        let iter = self.0.new_iter();
-        visitor.visit_enum(Enum {
-            key: iter.iter_key(0),
-            val: iter.iter_val(0),
+        visitor.visit_enum(if self.0.is_string() {
+            Enum {
+                key: self.0,
+                val: JsValue::undefined(),
+            }
+        } else {
+            let iter = self.0.new_iter();
+            Enum {
+                key: iter.iter_key(0),
+                val: iter.iter_val(0),
+            }
         })
     }
 
