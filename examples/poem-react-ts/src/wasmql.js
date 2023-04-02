@@ -62,12 +62,7 @@ export default async function ({ endpoint, wasm }) {
             return make_value(text_decoder.decode(view));
         },
         as_string: (val) => copy(text_encoder.encode(table[val])),
-        as_char: (val) => {
-            let str = text_encoder.encode(table[val]);
-            let view = new DataView(new ArrayBuffer(4));
-            new Uint8Array(view.buffer).set(str.slice(0, 4));
-            return view.getUint32();
-        },
+        is_string: (val) => typeof table[val] == "string",
         /* bytes */
         from_bytes: (data, len) => make_value(memory.slice(data, data + len)),
         as_bytes: (val) => copy(new Uint8Array(table[val])),
@@ -91,7 +86,7 @@ export default async function ({ endpoint, wasm }) {
         throw: (val) => {
             let obj = table[val];
             reset();
-            throw obj;
+            throw new Error(obj);
         },
     };
     
