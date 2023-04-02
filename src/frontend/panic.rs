@@ -13,13 +13,13 @@ pub type Result<T> = core::result::Result<T, Throw>;
 
 impl fmt::Debug for Throw {
     fn fmt(&self, _f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        unimplemented!()
+        unreachable!()
     }
 }
 
 impl fmt::Display for Throw {
     fn fmt(&self, _f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        unimplemented!()
+        unreachable!()
     }
 }
 
@@ -45,7 +45,7 @@ impl From<postcard::Error> for Throw {
 fn panic_handler(info: &PanicInfo) -> ! {
     match info.payload().downcast_ref::<&str>() {
         Some(s) => JsValue::from_string(s),
-        _ => JsValue::undefined(),
+        _ => JsValue::from_string("rust panic"),
     }
     .throw()
 }
