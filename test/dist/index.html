@@ -14,13 +14,13 @@
 
             const DATA = {
                 int: -8265628,
-                // float: 42.42,
-                // string: UTF8_TEST,
-                // record: {
-                //     k: "key",
-                //     v: 42,
-                // },
-                //new_type: 10000000,
+                float: 42.0,
+                string: UTF8_TEST,
+                record: {
+                    k: "key",
+                    v: 42,
+                },
+                new_type: 10000000,
             };
 
             let codec = await wasmql({
@@ -30,8 +30,9 @@
 
             let data = await codec.echo(DATA);
 
-            console.log(data, DATA);
             console.assert(_.isEqual(data, DATA), "mismatch");
+            console.log("sent:", JSON.stringify(DATA));
+            console.log("recv:", JSON.stringify(data));
         </script>
     </body>
 </html>
