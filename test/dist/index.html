@@ -3,10 +3,12 @@
     <head>
         <meta charset="utf-8">
         <title>WasmQL Demo</title>
+        <script src="./lodash.js"></script>
     </head>
     <body>
+        <p id="result"></p>
         <script type="module">
-            import wasmql from "/wasmql-copy.js";
+            import wasmql from "/wasmql.js";
 
             const UTF8_TEST = "~𝘈Ḇ𝖢𝕯٤ḞԍНǏ𝙅ƘԸⲘ𝙉০Ρ𝗤Ɍ𝓢ȚЦ𝒱Ѡ𝓧ƳȤѧᖯć𝗱ễ𝑓𝙜Ⴙ𝞲𝑗𝒌ļṃŉо𝞎𝒒ᵲꜱ𝙩ừ𝗏ŵ𝒙𝒚ź1234567890!@#$%^&*()-_=+[{]};:'\",<.>/?";
 
@@ -28,7 +30,8 @@
 
             let data = await codec.echo(DATA);
 
-            console.assert(data == DATA, "mismatch", data, DATA);
+            console.log(data, DATA);
+            console.assert(_.isEqual(data, DATA), "mismatch");
         </script>
     </body>
 </html>
