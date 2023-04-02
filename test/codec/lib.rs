@@ -58,6 +58,7 @@ pub struct EchoData {
     enum_tup: Enum,
     enum_struct: Enum,
     map: BTreeMap<String, u16>,
+    bytes: Vec<u8>,
 }
 
 lazy_static! {
@@ -81,5 +82,6 @@ lazy_static! {
         map: vec![("x".to_string(), 16), ("y".to_string(), 32), ("z".to_string(), 64)]
             .into_iter()
             .collect(),
+        bytes: vec![1, 2, 3, 4, 5],
     };
 }
