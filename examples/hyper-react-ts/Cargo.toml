@@ -12,9 +12,10 @@ path = "server.rs"
 
 [dependencies]
 codec = { path = "codec" }
-wasmql = { path = "../.." }
-poem = { version = "1", features = ["static-files"] }
-tokio = { version = "1", features = ["rt-multi-thread"] }
+http-body-util = "0.1.0-rc.2"
+hyper = { version = "1.0.0-rc.3", features = ["http1", "server"] }
+lazy_static = "1"
+tokio = { version = "1", features = ["fs", "macros", "net", "rt-multi-thread"] }
 
 [build-dependencies]
 wasmql-build = { path = "../../wasmql-build" }

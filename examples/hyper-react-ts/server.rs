@@ -1,7 +1,9 @@
+use std::collections::BTreeMap;
 use std::io;
 use std::path::Path;
+use std::sync::Mutex;
 
-use codec::MyCodec;
+use codec::TodoCodec;
 use http_body_util::{Full, BodyExt};
 use hyper::body::{Bytes, Incoming};
 use hyper::server::conn::http1;
@@ -9,6 +11,37 @@ use hyper::service::service_fn;
 use hyper::{Request, Response, Result, Method, StatusCode};
 use tokio::fs;
 use tokio::net::TcpListener;
+
+type Items = BTreeMap<i32, codec::Item>;
+
+static ITEMS: Mutex<Items> = Mutex::new(BTreeMap::new());
+
+struct TodoCodecImpl<'a> {
+    items: &'a mut Items,
+}
+
+impl TodoCodec for TodoCodecImpl<'_> {
+    fn create(self, name: String, desc: String) -> codec::Item {
+        let id = self.items.last_key_value().map(|(&id, _)| id).unwrap_or_default() + 1;
+        let item = codec::Item { id, name, desc, done: false };
+        self.items.insert(id, item.clone());
+        item
+    }
+
+    fn remove(self, id: i32) {
+        self.items.remove(&id);
+    }
+
+    fn items(self) -> Vec<codec::Item> {
+        self.items.values().cloned().collect()
+    }
+
+    fn set_done(self, id: i32, done: bool) {
+        if let Some(item) = self.items.get_mut(&id) {
+            item.done = done;
+        }
+    }
+}
 
 /// Returns an http error, with the given status code and message.
 fn http_error(status: StatusCode, msg: &'static str) -> Response<Full<Bytes>> {
@@ -18,16 +51,6 @@ fn http_error(status: StatusCode, msg: &'static str) -> Response<Full<Bytes>> {
         .unwrap()
 }
 
-/// The type that implements our codec.
-struct MyCodecImpl;
-
-impl MyCodec for MyCodecImpl {
-    /// This is the only method exposed by our codec.
-    fn greet(self, name: String) -> String {
-        format!("Hello, {name}!")
-    }
-}
-
 /// Handles our wasmql endpoint.
 async fn wasmql(req: Request<Incoming>) -> Result<Response<Full<Bytes>>> {
     // Collect body into bytes.
@@ -35,8 +58,14 @@ async fn wasmql(req: Request<Incoming>) -> Result<Response<Full<Bytes>>> {
         .await?
         .to_bytes();
 
+    let mut items_guard = ITEMS.lock().unwrap();
+
+    let codec = TodoCodecImpl {
+        items: &mut items_guard,
+    };
+
     // Dispatch wasmql call and build a response.
-    Ok(MyCodecImpl
+    Ok(codec
         .dispatch(&body)
         .map(|res| Response::new(Full::new(res.into())))
         .unwrap_or_else(|_| http_error(StatusCode::BAD_REQUEST, "wasmql codec error")))

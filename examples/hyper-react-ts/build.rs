@@ -7,9 +7,7 @@ fn main() -> Result<()> {
     wasmql_build::export_ts_bindings("src/wasmql.d.ts")?;
 
     // Build frontend.
-    Command::new("npm")
-            .args(["run", "build"])
-            .status()?;
+    Command::new("npm").args(["run", "build"]).status()?;
 
     // Compile wasm binary to dist directory.
     wasmql_build::compile_wasm_codec("codec", "dist/codec.wasm")?;
