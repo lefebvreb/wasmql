@@ -4,10 +4,10 @@ version = "0.0.0"
 edition = "2021"
 
 [workspace]
-members = ["codec"]
+members = ["my-codec"]
 
 [dependencies]
-codec = { path = "codec" }
+my-codec = { path = "my-codec" }
 poem = { version = "1", features = ["static-files"] }
 tokio = { version = "1", features = ["rt-multi-thread"] }
 

@@ -43,7 +43,7 @@ edition = "2021"
 members = ["my-codec"] # Our codec crate (yet to be created)
 
 [dependencies]
-my_codec = { path = "my-codec" }
+my-codec = { path = "my-codec" }
 poem = { version = "1", features = ["static-files"] }
 tokio = { version = "1", features = ["rt-multi-thread"] }
 
@@ -85,7 +85,7 @@ pub trait MyCodec {
 }
 ```
 
-Next, get back to the root of our project, and put the code of our serve in `src/main.rs`:
+Next, get back to the root of our project, and put the code of our server in `src/main.rs`:
 
 ```
 // wasmql-example/src/main.rs
@@ -175,7 +175,7 @@ use std::io::Result;
 
 fn main() -> Result<()> {
     wasmql_build::export_js_library("dist/wasmql.min.js", true)?;
-    wasmql_build::compile_wasm_codec("codec", "dist/codec.wasm")?;
+    wasmql_build::compile_wasm_codec("my-codec", "dist/codec.wasm")?;
     Ok(())
 }
 ```

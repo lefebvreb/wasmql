@@ -1,6 +1,6 @@
 use std::io;
 
-use codec::MyCodec;
+use my_codec::MyCodec;
 use poem::endpoint::StaticFilesEndpoint;
 use poem::http::StatusCode;
 use poem::listener::TcpListener;

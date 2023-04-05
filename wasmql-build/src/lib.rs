@@ -129,12 +129,16 @@ pub fn compile_wasm_codec<P1: AsRef<Path>, P2: AsRef<Path>>(
         .arg("cdylib")
         .status()?;
 
-    let wasm_file = target_dir
+    let wasm_file = crate_path.to_str()
+        .expect("invalid crate name")
+        .replace('-', "_");
+
+    let wasm_path = target_dir
         .join("wasm32-unknown-unknown")
         .join("release")
-        .join(crate_path.with_extension("wasm"));
+        .join(Path::new(&wasm_file).with_extension("wasm"));
 
-    fs::copy(wasm_file, dest)?;
+    fs::copy(wasm_path, dest)?;
 
     Ok(())
 }
