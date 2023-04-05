@@ -12,17 +12,16 @@
         <script type="module">
             import wasmql from "/wasmql.min.js";
 
+            // Initialize our codec
             let codec = await wasmql({
                 endpoint: "/wasmql",
                 wasm: "/codec.wasm",
             });
 
-            document.getElementById("name").oninput = (e) => {
-                let name = e.target.value;
-                codec.greet(name)
-                    .then((greeting) => {
-                        document.getElementById("greeting").innerHTML = greeting;
-                    });
+            document.getElementById("name").oninput = async (e) => {
+                // Call our codec's greet method and update document.
+                let greeting = await codec.greet(e.target.value);
+                document.getElementById("greeting").innerHTML = greeting;
             };
         </script>
     </body>

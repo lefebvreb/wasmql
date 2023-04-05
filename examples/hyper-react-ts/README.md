@@ -1,4 +1,4 @@
-# Poem + React + TS
+# Hyper + React + TS
 
 This directory contains a complete example of using WasmQL to create a simple web TODO webapp.
 

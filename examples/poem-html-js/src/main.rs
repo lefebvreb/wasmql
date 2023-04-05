@@ -6,7 +6,7 @@ use poem::http::StatusCode;
 use poem::listener::TcpListener;
 use poem::{post, Error, Route, Server};
 
-struct MyCodecImpl;
+struct MyCodecImpl; // Type implementing our WasmQL Codec
 
 impl MyCodec for MyCodecImpl {
     fn greet(self, name: String) -> String {
